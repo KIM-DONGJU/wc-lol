@@ -493,7 +493,6 @@ const getPositionImage = (position: string) => {
     .tier-header {
       min-width: 100px;
       font-size: 14px;
-      padding: 0 20px;
       height: 40px;
       display: flex;
       justify-content: center;
@@ -521,6 +520,7 @@ const getPositionImage = (position: string) => {
     .tier-table-header {
       width: 100%;
       display: grid;
+      gap: 5px;
       grid-template-columns: 1fr 3fr 2fr 1fr 2fr;
       background-color: #f7f7f9;
       border-radius: 4px 4px 0 0;
@@ -543,6 +543,7 @@ const getPositionImage = (position: string) => {
       width: 100%;
       display: grid;
       grid-template-columns: 1fr 3fr 2fr 1fr 2fr;
+      gap: 5px;
       border-radius: 4px 4px 0 0;
       padding: 4px 8px;
       box-sizing: border-box;
@@ -564,6 +565,7 @@ const getPositionImage = (position: string) => {
     .wrap-tier-header {
       .tier-header {
         min-width: 40px;
+        flex: 1;
         font-size: 12px;
       }
     }
