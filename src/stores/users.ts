@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { supabase } from '@/supabase'
 
 export interface User {
   name: string
@@ -34,7 +35,7 @@ export const useUsersStore = defineStore('users', () => {
       {
         name: '김지성',
         nickName: '조져버렸다',
-        point: 5,
+        point: 4,
         position: 'top'
       },
       {
@@ -78,6 +79,12 @@ export const useUsersStore = defineStore('users', () => {
         nickName: '두꺼움',
         point: 2,
         position: 'top'
+      },
+      {
+        name: '이승윤',
+        nickName: 'du루와',
+        point: 4,
+        position: 'top'
       }
     ],
     mid: [
@@ -119,8 +126,8 @@ export const useUsersStore = defineStore('users', () => {
       },
       {
         name: '이승윤',
-        nickName: '만능오른',
-        point: 4,
+        nickName: 'du루와',
+        point: 5,
         position: 'mid'
       },
       {
@@ -190,6 +197,24 @@ export const useUsersStore = defineStore('users', () => {
         nickName: '엘올엘월즈',
         point: 2,
         position: 'sup'
+      },
+      {
+        name: '이승윤',
+        nickName: 'du루와',
+        point: 4,
+        position: 'sup'
+      },
+      {
+        name: '이완호',
+        nickName: '가까움',
+        point: 2,
+        position: 'sup'
+      },
+      {
+        name: '김준현',
+        nickName: '사랑시고백구행복동',
+        point: 3,
+        position: 'sup'
       }
     ],
     jungle: [
@@ -202,7 +227,7 @@ export const useUsersStore = defineStore('users', () => {
       {
         name: '김지성',
         nickName: '조져버렸다',
-        point: 4,
+        point: 3,
         position: 'jungle'
       },
       {
@@ -214,18 +239,24 @@ export const useUsersStore = defineStore('users', () => {
       {
         name: '유재훈',
         nickName: '따가움',
-        point: 5,
-        position: 'jungle'
-      },
-      {
-        name: '이완호',
-        nickName: '가까움',
-        point: 2,
+        point: 4,
         position: 'jungle'
       },
       {
         name: '박진배',
         nickName: '살가움',
+        point: 4,
+        position: 'jungle'
+      },
+      {
+        name: '이승윤',
+        nickName: 'du루와',
+        point: 4,
+        position: 'jungle'
+      },
+      {
+        name: '김준현',
+        nickName: '사랑시고백구행복동',
         point: 3,
         position: 'jungle'
       }
@@ -258,13 +289,13 @@ export const useUsersStore = defineStore('users', () => {
       {
         name: '이수환',
         nickName: '피터팬',
-        point: 3,
+        point: 4,
         position: 'adc'
       },
       {
         name: '이승윤',
-        nickName: '만능오른',
-        point: 3,
+        nickName: 'du루와',
+        point: 4,
         position: 'adc'
       },
       {
@@ -284,9 +315,24 @@ export const useUsersStore = defineStore('users', () => {
         nickName: '따가움',
         point: 2,
         position: 'adc'
+      },
+      {
+        name: '백승민',
+        nickName: '괴롭혀주십시오',
+        point: 3,
+        position: 'adc'
       }
     ]
   })
 
-  return { userList }
+  const getGroupMembers = async () => {
+    try {
+      const { data: groupmembers, error } = await supabase.from('groupmembers').select('*')
+      console.log(groupmembers, '--')
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  return { userList, getGroupMembers }
 })

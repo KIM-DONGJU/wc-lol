@@ -293,6 +293,8 @@ import { useUsersStore, type User } from '@/stores/users'
 import { computed, ref } from 'vue'
 
 const usersStore = useUsersStore()
+
+usersStore.getGroupMembers()
 const search = ref('')
 const userList = computed(() => {
   return usersStore.userList

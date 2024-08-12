@@ -13,10 +13,10 @@
     </div>
     <header class="wrap-tier-header">
       <p
-        class="tier-header"
-        :class="isSelectStyle(header.value)"
         v-for="header in headerList"
         :key="header.value"
+        class="tier-header"
+        :class="isSelectStyle(header.value)"
         @click="searchTierByLine(header.value)"
       >
         {{ header.title }}
