@@ -30,12 +30,12 @@
         <p>포지션</p>
         <p>모스트 챔피언</p>
       </header>
-      <div class="tier-table" v-for="(userTier, index) in userTierList" :key="index">
+      <div class="tier-table" v-for="(userTier, index) in groupMemberList" :key="index">
         <p>
           {{ userTier.point }}
         </p>
         <p>
-          {{ userTier.nickName }}
+          {{ userTier.nickname }}
         </p>
         <p>
           {{ userTier.name }}
@@ -55,13 +55,14 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { USER_TIER } from '@/constants/routes'
+import { useUsersStore, type Position } from '@/stores/users'
+
 import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg'
 import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg'
 import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg'
 import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg'
 import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg'
-import { USER_TIER } from '@/constants/routes'
-import { useUsersStore } from '@/stores/users'
 
 const router = useRouter()
 
@@ -94,38 +95,55 @@ const headerList = [
 
 const usersStore = useUsersStore()
 
-const userList = computed(() => {
-  return usersStore.userList
-})
-
 const searchInput = ref('')
 
-const userTierList = computed(() => {
-  const position = router.currentRoute.value.params.position || 'all'
+const groupMemberList = computed(() => {
+  const position = (router.currentRoute.value.params.position || 'all') as Position | 'all'
+
+  const parsingGroupMembmers = usersStore.groupMembers
+    .flatMap((groupMember) => {
+      const member = [
+        {
+          nickname: groupMember.nickname,
+          name: groupMember.name,
+          position: groupMember.mainPosition,
+          point: groupMember.positionScore[groupMember.mainPosition],
+          mainPosition: groupMember.mainPosition,
+          subPosition: groupMember.subPosition
+        }
+      ]
+
+      if (groupMember.subPosition) {
+        member.push({
+          nickname: groupMember.nickname,
+          name: groupMember.name,
+          position: groupMember.subPosition,
+          point: groupMember.positionScore[groupMember.subPosition],
+          mainPosition: groupMember.mainPosition,
+          subPosition: groupMember.subPosition
+        })
+      }
+
+      return member
+    })
+    .filter(
+      (member) =>
+        member.nickname.includes(searchInput.value.trim()) ||
+        member.name.includes(searchInput.value.trim())
+    )
+    .sort((a, b) => b.point - a.point)
 
   if (position === 'all') {
-    const flattenedList = Object.values(userList.value).flat()
-    const sortedList = flattenedList.sort((a, b) => b.point - a.point)
-
-    if (searchInput.value) {
-      return sortedList.filter(
-        (user) => user.nickName.includes(searchInput.value) || user.name.includes(searchInput.value)
-      )
-    }
-
-    return sortedList
+    return parsingGroupMembmers
   }
 
-  const filterUsers = userList.value[position as 'top' | 'mid' | 'sup' | 'jungle' | 'adc']
-  if (searchInput.value) {
-    return filterUsers
-      .filter(
-        (user) => user.nickName.includes(searchInput.value) || user.name.includes(searchInput.value)
-      )
-      .sort((a, b) => b.point - a.point)
-  }
+  const filterGroupMembers = parsingGroupMembmers.filter(
+    (member) =>
+      member.position === position &&
+      (member.mainPosition === position || member.subPosition === position)
+  )
 
-  return filterUsers.sort((a, b) => b.point - a.point)
+  return filterGroupMembers
 })
 
 const searchTierByLine = (position: string) => {

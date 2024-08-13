@@ -2,7 +2,7 @@
   <div class="create-match-root">
     <v-card class="wrap-search-user-list" width="100%">
       <v-data-iterator
-        :items="uniqueUserNameList"
+        :items="parsingGroupMembmers"
         :items-per-page="30"
         :search="search"
         width="100%"
@@ -30,10 +30,10 @@
               class="user-name"
               v-for="(item, index) in items"
               :key="index"
-              :class="selectedUserStyle(item.raw.title)"
-              @click="onSelectUser(item.raw.title)"
+              :class="selectedUserStyle(item.raw)"
+              @click="onSelectGroupMember(item.raw)"
             >
-              {{ item.raw.title }}
+              {{ item.raw.name }} ({{ item.raw.nickname }})
             </div>
           </div>
         </template>
@@ -65,29 +65,38 @@
     <div class="wrap-today-participant">
       <div class="wrap-tables">
         <p class="font-weight-bold text-h6">
-          금일 내전 참가자 목록 ({{ selectedUserList.length }}명)
+          금일 내전 참가자 목록 ({{ selectedGroupMembers.length }}명)
         </p>
-        <div v-if="selectedUserList.length" class="today-participant d-flex mt-4">
+        <div v-if="selectedGroupMembers.length" class="today-participant d-flex mt-4">
           <div
-            v-if="filterFindUserListByTier.length"
+            v-if="nonTeamSelectedMembers.length"
             class="d-flex flex-column wrap-select-tier-table"
           >
             <div
-              v-for="(findUser, index) in filterFindUserListByTier"
+              v-for="(selectedMembers, index) in nonTeamSelectedMembers"
               :key="index"
               class="select-tier-table d-flex"
               @dragstart="startDrag($event, index)"
               draggable="true"
             >
               <p class="tier-table-left d-flex justify-center align-center text-center">
-                {{ findUser.name }}<br />
-                ({{ findUser.nickName }})
+                {{ selectedMembers.name }}<br />
+                ({{ selectedMembers.nickname }})
               </p>
               <div class="tier-table-right d-flex flex-column">
-                <p v-for="(tier, ldx) in findUser.tier" :key="ldx" class="flex-1-1">
-                  {{ LINE[tier.position] }}: {{ tier.point }}점
+                <p
+                  v-for="(score, position) in getMainPostionAndSubPosition(selectedMembers)"
+                  :key="position"
+                  class="flex-1-1"
+                >
+                  {{ LINE[position] }}: {{ score }}점
                 </p>
               </div>
+              <v-tooltip activator="parent" location="top">
+                <p v-for="(score, key) in selectedMembers.positionScore" :key="key">
+                  {{ LINE[key] }}: {{ score }}점
+                </p>
+              </v-tooltip>
             </div>
           </div>
           <table class="participant-table">
@@ -96,178 +105,62 @@
               <th class="first text-h5">1팀</th>
               <th class="second text-h5">2팀</th>
             </tr>
-            <tr>
-              <td>탑</td>
-              <td @drop.prevent="onDrop($event, 0, 'top')" @dragenter.prevent @dragover.prevent>
+            <tr v-for="(position, index) in positionList" :key="index">
+              <td>{{ position.label }}</td>
+              <td
+                @drop.prevent="onDrop($event, 0, position.value)"
+                @dragenter.prevent
+                @dragover.prevent
+              >
                 <div
-                  v-if="teamList[0].top"
+                  v-if="teamList[0][position.value]"
                   class="position-user d-flex justify-center align-center"
                   draggable="true"
-                  @dragstart="changeDrag($event, 0, 'top')"
+                  @dragstart="changeDrag($event, 0, position.value)"
                 >
                   <div class="w-50 text-center">
-                    <p>{{ teamList[0].top.name }}</p>
-                    <p>({{ teamList[0].top.nickName }})</p>
+                    <p>{{ teamList[0][position.value]?.name }}</p>
+                    <p>({{ teamList[0][position.value]?.nickname }})</p>
                   </div>
                   <div class="w-50 text-center">
-                    <p>{{ teamList[0].top.point }}점</p>
+                    <p>{{ teamList[0][position.value]?.positionScore[position.value] }}점</p>
                   </div>
+                  <v-tooltip activator="parent" location="top">
+                    <p
+                      v-for="(score, key) in teamList[0][position.value]?.positionScore"
+                      :key="key"
+                    >
+                      {{ LINE[key] }}: {{ score }}점
+                    </p>
+                  </v-tooltip>
                 </div>
               </td>
-              <td @drop.prevent="onDrop($event, 1, 'top')" @dragenter.prevent @dragover.prevent>
+              <td
+                @drop.prevent="onDrop($event, 1, position.value)"
+                @dragenter.prevent
+                @dragover.prevent
+              >
                 <div
-                  v-if="teamList[1].top"
+                  v-if="teamList[1][position.value]"
                   class="position-user d-flex justify-center align-center"
                   draggable="true"
-                  @dragstart="changeDrag($event, 1, 'top')"
+                  @dragstart="changeDrag($event, 1, position.value)"
                 >
                   <div class="w-50 text-center">
-                    <p>{{ teamList[1].top.name }}</p>
-                    <p>({{ teamList[1].top.nickName }})</p>
+                    <p>{{ teamList[1][position.value]?.name }}</p>
+                    <p>({{ teamList[1][position.value]?.nickname }})</p>
                   </div>
                   <div class="w-50 text-center">
-                    <p>{{ teamList[1].top.point }}점</p>
+                    <p>{{ teamList[1][position.value]?.positionScore[position.value] }}점</p>
                   </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>정글</td>
-              <td @drop.prevent="onDrop($event, 0, 'jungle')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[0].jungle"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 0, 'jungle')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].jungle.name }}</p>
-                    <p>({{ teamList[0].jungle.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].jungle.point }}점</p>
-                  </div>
-                </div>
-              </td>
-              <td @drop.prevent="onDrop($event, 1, 'jungle')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[1].jungle"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 1, 'jungle')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].jungle.name }}</p>
-                    <p>({{ teamList[1].jungle.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].jungle.point }}점</p>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>미드</td>
-              <td @drop.prevent="onDrop($event, 0, 'mid')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[0].mid"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 0, 'mid')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].mid.name }}</p>
-                    <p>({{ teamList[0].mid.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].mid.point }}점</p>
-                  </div>
-                </div>
-              </td>
-              <td @drop.prevent="onDrop($event, 1, 'mid')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[1].mid"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 1, 'mid')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].mid.name }}</p>
-                    <p>({{ teamList[1].mid.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].mid.point }}점</p>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>원딜</td>
-              <td @drop.prevent="onDrop($event, 0, 'adc')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[0].adc"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 0, 'adc')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].adc.name }}</p>
-                    <p>({{ teamList[0].adc.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].adc.point }}점</p>
-                  </div>
-                </div>
-              </td>
-              <td @drop.prevent="onDrop($event, 1, 'adc')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[1].adc"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 1, 'adc')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].adc.name }}</p>
-                    <p>({{ teamList[1].adc.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].adc.point }}점</p>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>서폿</td>
-              <td @drop.prevent="onDrop($event, 0, 'sup')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[0].sup"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 0, 'sup')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].sup.name }}</p>
-                    <p>({{ teamList[0].sup.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0].sup.point }}점</p>
-                  </div>
-                </div>
-              </td>
-              <td @drop.prevent="onDrop($event, 1, 'sup')" @dragenter.prevent @dragover.prevent>
-                <div
-                  v-if="teamList[1].sup"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 1, 'sup')"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].sup.name }}</p>
-                    <p>({{ teamList[1].sup.nickName }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1].sup.point }}점</p>
-                  </div>
+                  <v-tooltip activator="parent" location="top">
+                    <p
+                      v-for="(score, key) in teamList[1][position.value]?.positionScore"
+                      :key="key"
+                    >
+                      {{ LINE[key] }}: {{ score }}점
+                    </p>
+                  </v-tooltip>
                 </div>
               </td>
             </tr>
@@ -289,71 +182,56 @@
 
 <script setup lang="ts">
 import { LINE } from '@/constants/tier'
-import { useUsersStore, type User } from '@/stores/users'
+import { useUsersStore, type GroupMember, type Position, type User } from '@/stores/users'
 import { computed, ref } from 'vue'
 
 const usersStore = useUsersStore()
 
-usersStore.getGroupMembers()
-const search = ref('')
-const userList = computed(() => {
-  return usersStore.userList
-})
-
-// 중복 제거된 userList
-const uniqueUserNameList = computed(() => {
-  return Array.from(
-    new Set(
-      Object.values(userList.value)
-        .flat()
-        .map((user) => `${user.name} (${user.nickName})`)
-    )
-  ).map((name) => {
-    return {
-      title: name
-    }
-  })
-})
-
-const selectedUserList = ref<string[]>([])
-const isVisibleMessage = ref(false)
-const onSelectUser = (userName: string) => {
-  if (selectedUserList.value.includes(userName)) {
-    selectedUserList.value = selectedUserList.value.filter((name) => name !== userName)
-  } else {
-    // if (selectedUserList.value.length >= 10) {
-    //   isVisibleMessage.value = true
-    //   return
-    // }
-
-    selectedUserList.value.push(userName)
+const positionList = [
+  {
+    label: '탑',
+    value: 'top'
+  },
+  {
+    label: '정글',
+    value: 'jungle'
+  },
+  {
+    label: '미드',
+    value: 'mid'
+  },
+  {
+    label: '원딜',
+    value: 'adc'
+  },
+  {
+    label: '서폿',
+    value: 'sup'
   }
+] as const
+
+const search = ref('')
+
+const parsingGroupMembmers = computed(() => {
+  return usersStore.groupMembers
+})
+
+const selectedGroupMembers = ref<GroupMember[]>([])
+const isVisibleMessage = ref(false)
+const onSelectGroupMember = (groupMember: GroupMember) => {
+  const findGroupMemberIndex = selectedGroupMembers.value.findIndex(
+    (item) => item.name === groupMember.name && item.nickname === groupMember.nickname
+  )
+
+  if (findGroupMemberIndex !== -1) {
+    selectedGroupMembers.value.splice(findGroupMemberIndex, 1)
+    return
+  }
+
+  selectedGroupMembers.value.push(groupMember)
 }
 
-const findUserListByTier = computed(() => {
-  const setSelectedUserList = selectedUserList.value.map((userName) => {
-    return {
-      name: userName.split(' (')[0],
-      nickName: userName.split(' (')[1].slice(0, -1)
-    }
-  })
-
-  const allUserListbyTier = Object.values(userList.value).flat()
-  const setSelectedUserListByTier = setSelectedUserList.map((user) => {
-    const findUser = allUserListbyTier
-      .filter((item) => item.name === user.name && item.nickName === user.nickName)
-      .sort((a, b) => b.point - a.point)
-
-    return {
-      ...user,
-      tier: findUser as User[]
-    }
-  })
-
-  return setSelectedUserListByTier
-})
-
-const teamList = ref<Team[]>([
+const teamList = ref<Record<Position, GroupMember | null>[]>([
   {
     top: null,
     jungle: null,
@@ -371,49 +249,40 @@ const teamList = ref<Team[]>([
 ])
 
 const sumPoints = computed(() => {
-  const firstTeamPoints = Object.values(teamList.value[0])
-    .flat()
-    .reduce((acc, cur) => {
-      return acc + (cur?.point || 0)
-    }, 0)
+  const firstTeamPoints = Object.entries(teamList.value[0]).reduce((total, [key, value]) => {
+    const positionKey = key as Position
+    return total + (value?.positionScore[positionKey] || 0)
+  }, 0)
 
-  const secondPoints = Object.values(teamList.value[1])
-    .flat()
-    .reduce((acc, cur) => {
-      return acc + (cur?.point || 0)
-    }, 0)
+  const secondPoints = Object.entries(teamList.value[1]).reduce((total, [key, value]) => {
+    const positionKey = key as Position
+    return total + (value?.positionScore[positionKey] || 0)
+  }, 0)
 
   return [firstTeamPoints, secondPoints]
 })
 
-const filterFindUserListByTier = computed(() => {
+const selectedUserStyle = (groupMember: GroupMember) => {
+  const findGroupMember = selectedGroupMembers.value.find((item) => item.id === groupMember.id)
+
+  return findGroupMember ? 'selected-user' : ''
+}
+
+const nonTeamSelectedMembers = computed(() => {
   const flatTeamList = teamList.value.flatMap((team) => Object.values(team).flat())
-  const filterTeamList = findUserListByTier.value.filter(
+  const filterTeamList = selectedGroupMembers.value.filter(
     (originUser) =>
       !flatTeamList.find(
-        (user) => user?.name === originUser.name && user?.nickName === originUser.nickName
+        (user) => user?.name === originUser.name && user?.nickname === originUser.nickname
       )
   )
 
   return filterTeamList
 })
 
-const selectedUserStyle = (userName: string) => {
-  return selectedUserList.value.includes(userName) ? 'selected-user' : ''
-}
-
-type Position = 'top' | 'mid' | 'sup' | 'jungle' | 'adc'
-interface Team {
-  top: User | null
-  jungle: User | null
-  mid: User | null
-  adc: User | null
-  sup: User | null
-}
-
 const startDrag = (e: DragEvent, index: number) => {
   if (e.dataTransfer) {
-    e.dataTransfer.setData('selectedUserIndex', `${index}`)
+    e.dataTransfer.setData('selectedGroupMemberIndex', `${index}`)
   }
 }
 
@@ -425,77 +294,47 @@ const changeDrag = (e: DragEvent, teamNumber: number, position: Position) => {
   }
 }
 
+const getMainPostionAndSubPosition = (groupMember: GroupMember) => {
+  const mainPositionScore = groupMember.positionScore[groupMember.mainPosition]
+  const position: Partial<Record<Position, number>> = {
+    [groupMember.mainPosition]: mainPositionScore
+  }
+
+  if (groupMember.subPosition) {
+    position[groupMember.subPosition] = groupMember.positionScore[groupMember.subPosition]
+  }
+
+  return position
+}
+
 const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
   if (e.dataTransfer) {
     if (e.dataTransfer.getData('dragType') === 'change') {
       const originTeamNumber = Number(e.dataTransfer.getData('teamNumber'))
       const originTeamPosition = e.dataTransfer.getData('position') as Position
-      const originUser = teamList.value[originTeamNumber][originTeamPosition] as User
-      const changeTeamUser = teamList.value[teamNumber][position]
+      const originMember = teamList.value[originTeamNumber][originTeamPosition] as GroupMember
+      const changeTeamMember = teamList.value[teamNumber][position]
 
-      const findOriginUser = findUserListByTier.value.find((user) => {
-        return user.name === originUser?.name && user.nickName === originUser.nickName
-      })?.tier
-      const findOriginUserTier = findOriginUser?.find((tier) => {
-        return tier.position === position
+      const findOriginMember = selectedGroupMembers.value.find((member) => {
+        return member.id === originMember.id
       })
-
-      if (!findOriginUserTier) {
-        teamList.value[teamNumber][position] = {
-          name: originUser?.name,
-          nickName: originUser?.nickName,
-          position,
-          point: 1
-        }
-      } else {
-        teamList.value[teamNumber][position] = findOriginUserTier
-      }
-
-      if (changeTeamUser === null) {
+      teamList.value[teamNumber][position] = findOriginMember || null
+      if (changeTeamMember === null) {
         teamList.value[originTeamNumber][originTeamPosition] = null
         return
       }
 
-      const findChangeUser = findUserListByTier.value.find((user) => {
-        return user.name === changeTeamUser?.name && user.nickName === changeTeamUser?.nickName
-      })?.tier
-
-      const findChangeUserTier = findChangeUser?.find((tier) => {
-        return tier.position === originTeamPosition
+      const findChangeUser = selectedGroupMembers.value.find((member) => {
+        return member.id === changeTeamMember.id
       })
-
-      if (!findChangeUserTier) {
-        teamList.value[originTeamNumber][originTeamPosition] = {
-          name: changeTeamUser?.name,
-          nickName: changeTeamUser?.nickName,
-          position: originTeamPosition,
-          point: 1
-        }
-      } else {
-        teamList.value[originTeamNumber][originTeamPosition] = findChangeUserTier
-      }
-
+      teamList.value[originTeamNumber][originTeamPosition] = findChangeUser || null
       return
     }
 
-    const index = Number(e.dataTransfer.getData('selectedUserIndex'))
-    const userTiers = filterFindUserListByTier.value[index].tier
-    const findUserTier = userTiers.find((tier) => {
-      return tier.position === position
-    })
+    const index = Number(e.dataTransfer.getData('selectedGroupMemberIndex'))
+    teamList.value[teamNumber][position] = nonTeamSelectedMembers.value[index]
 
-    if (!findUserTier) {
-      teamList.value[teamNumber][position] = {
-        name: filterFindUserListByTier.value[index].name,
-        nickName: filterFindUserListByTier.value[index].nickName,
-        position,
-        point: 1
-      }
-
-      return
-    }
-
-    teamList.value[teamNumber][position] = findUserTier
+    return
   }
 }
 </script>
