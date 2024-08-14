@@ -9,8 +9,6 @@ import AppNav from './layouts/AppNav.vue'
 import { useUsersStore } from '@/stores/users'
 
 const usersStore = useUsersStore()
-if (usersStore.groupMembers.length === 0) {
-  usersStore.getGroupMembers()
-}
+usersStore.getGroupMembers()
 </script>
 <style lang="scss"></style>
