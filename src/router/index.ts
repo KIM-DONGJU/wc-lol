@@ -1,4 +1,4 @@
-import { CREATE_MATCH, NOT_FOUND, USER_TIER } from '@/constants/routes'
+import { CREATE_MATCH, LOGIN, NOT_FOUND, USER_TIER } from '@/constants/routes'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -17,6 +17,11 @@ const router = createRouter({
       path: CREATE_MATCH.path,
       name: CREATE_MATCH.name,
       component: () => import('@/views/CreateMatchView.vue')
+    },
+    {
+      path: LOGIN.path,
+      name: LOGIN.name,
+      component: () => import('@/views/LoginView.vue')
     }
   ]
 })

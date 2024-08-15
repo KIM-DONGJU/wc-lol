@@ -13,14 +13,16 @@
       </div>
       <div class="wrap-login">
         <img src="@/assets/images/icon/my-page.svg" />
-        <p class="login">로그인</p>
+        <router-link :to="LOGIN.path">
+          <p class="login">로그인</p>
+        </router-link>
       </div>
     </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { CREATE_MATCH, MATCH_HISTORY, NOT_FOUND, USER_TIER } from '@/constants/routes'
+import { CREATE_MATCH, LOGIN, MATCH_HISTORY, NOT_FOUND, USER_TIER } from '@/constants/routes'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -100,6 +102,10 @@ const currentRouteStyle = (name: string) => {
       align-items: center;
       gap: 10px;
       cursor: pointer;
+
+      > a {
+        text-decoration: none;
+      }
 
       .login {
         font-size: 14px;

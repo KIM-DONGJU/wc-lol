@@ -357,7 +357,10 @@ export const useUsersStore = defineStore(
 
     const getGroupMembers = async () => {
       try {
-        const { data } = await supabase.from('groupmembers').select<'*', GroupMember>('*')
+        const { data } = await supabase
+          .from('groupmembers')
+          .select<'', GroupMember>()
+          .eq('groupId', 1)
 
         setGroupMembers(data || [])
       } catch (err) {
