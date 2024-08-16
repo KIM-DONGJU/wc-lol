@@ -1,5 +1,5 @@
 <template>
-  <v-container class="login-root" style="max-width: 450px" fill-height>
+  <v-container class="login-root" style="max-width: 510px" fill-height>
     <v-layout class="w-100" align-center row wrap>
       <v-card width="100%">
         <div class="pa-10">
@@ -33,7 +33,6 @@
 <script setup lang="ts">
 import { supabase } from '@/supabase'
 import { onMounted, reactive, ref } from 'vue'
-import { GoogleLogin } from 'vue3-google-login'
 
 const bindId = ref('')
 const bindPassword = ref('')

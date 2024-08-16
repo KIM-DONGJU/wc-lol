@@ -13,7 +13,7 @@
       </div>
       <div class="wrap-login">
         <img src="@/assets/images/icon/my-page.svg" />
-        <router-link :to="LOGIN.path">
+        <router-link v-if="!isLoginUser" :to="LOGIN.path">
           <p class="login">로그인</p>
         </router-link>
       </div>
@@ -23,9 +23,12 @@
 
 <script setup lang="ts">
 import { CREATE_MATCH, LOGIN, MATCH_HISTORY, NOT_FOUND, USER_TIER } from '@/constants/routes'
+import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const authStore = useAuthStore()
 
 const routes = [
   {
@@ -61,6 +64,8 @@ const currentRouteStyle = (name: string) => {
     'current-path': route.name === name
   }
 }
+
+const isLoginUser = computed(() => authStore.user)
 </script>
 <style lang="scss" scoped>
 .nav-root {

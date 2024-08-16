@@ -1,4 +1,5 @@
 import { CREATE_MATCH, LOGIN, NOT_FOUND, USER_TIER } from '@/constants/routes'
+import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -21,7 +22,15 @@ const router = createRouter({
     {
       path: LOGIN.path,
       name: LOGIN.name,
-      component: () => import('@/views/LoginView.vue')
+      component: () => import('@/views/LoginView.vue'),
+      beforeEnter: (to, from, next) => {
+        const authStore = useAuthStore()
+        if (authStore.user) {
+          next({ name: 'userTier', params: { position: 'all' } })
+        } else {
+          next()
+        }
+      }
     }
   ]
 })
