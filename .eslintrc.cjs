@@ -12,5 +12,8 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest'
+  },
+  rules: {
+    'vue/attributes-order': 'off' // 속성 순서 강제 규칙 비활성화
   }
 }
