@@ -3,12 +3,12 @@
     <nav class="nav">
       <div class="wrap-left">
         <router-link
-          v-for="(route, index) in routes"
+          v-for="(routeInfo, index) in routes"
           :key="index"
-          :to="route.path"
-          :class="currentRouteStyle(route.name)"
+          :class="currentRouteStyle(routeInfo.name)"
+          :to="routeInfo.path"
         >
-          {{ route.label }}
+          {{ routeInfo.label }}
         </router-link>
       </div>
       <div class="wrap-login">
@@ -25,50 +25,50 @@
 </template>
 
 <script setup lang="ts">
-import { CREATE_MATCH, LOGIN, MATCH_HISTORY, NOT_FOUND, USER_TIER } from '@/constants/routes'
-import { useAuthStore } from '@/stores/auth'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { CREATE_MATCH, LOGIN, MATCH_HISTORY, NOT_FOUND, USER_TIER } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
-const route = useRoute()
-const authStore = useAuthStore()
+const route = useRoute();
+const authStore = useAuthStore();
 
 const routes = [
   {
     path: '/user-tier',
     label: 'WC-LOL',
-    name: ''
+    name: '',
   },
   {
     path: '/user-tier',
     label: '유저 목록',
-    name: USER_TIER.name
+    name: USER_TIER.name,
   },
   {
     path: CREATE_MATCH.path,
     label: '대전 생성',
-    name: CREATE_MATCH.name
+    name: CREATE_MATCH.name,
   },
   {
     path: MATCH_HISTORY.path,
     label: '대전 기록',
-    name: MATCH_HISTORY.name
-  }
-]
+    name: MATCH_HISTORY.name,
+  },
+];
 
 const currentRouteStyle = (name: string) => {
   if (route.name === NOT_FOUND.name) {
     return {
-      'current-path': name === USER_TIER.name
-    }
+      'current-path': name === USER_TIER.name,
+    };
   }
 
   return {
-    'current-path': route.name === name
-  }
-}
+    'current-path': route.name === name,
+  };
+};
 
-const isLoginUser = computed(() => authStore.user)
+const isLoginUser = computed(() => authStore.user);
 </script>
 <style lang="scss" scoped>
 .nav-root {

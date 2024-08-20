@@ -5,16 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import TierTable from '@/components/TierTable.vue'
-
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-
-const position = computed(() => {
-  return route.params.position || 'all'
-})
+import TierTable from '@/components/TierTable.vue';
 </script>
 
 <style scoped lang="scss">

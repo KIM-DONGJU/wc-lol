@@ -3,5 +3,5 @@ export const LINE = {
   jungle: '정글',
   mid: '미드',
   adc: '원딜',
-  sup: '서폿'
-} as const
+  sup: '서폿',
+} as const;

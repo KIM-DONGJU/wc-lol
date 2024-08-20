@@ -7,46 +7,46 @@
         :search="search"
         width="100%"
       >
-        <template v-slot:header>
+        <template #header>
           <p>금일 내전 참가자 검색 및 등록</p>
           <v-text-field
             v-model="search"
+            base-color="#5382e8"
             class="mt-3"
+            clearable
+            color="#5382e8"
             density="compact"
+            hide-details
             placeholder="이름, 닉네임 검색"
             prepend-inner-icon="mdi-magnify"
-            width="100%"
             style="max-width: 300px"
             variant="outlined"
-            base-color="#5382e8"
-            color="#5382e8"
-            clearable
-            hide-details
-          ></v-text-field>
+            width="100%"
+          />
         </template>
-        <template v-slot:default="{ items }">
+        <template #default="{ items }">
           <div class="wrap-search-users-info mt-5">
             <div
-              class="user-name"
               v-for="(item, index) in items"
               :key="index"
               :class="selectedUserStyle(item.raw)"
+              class="user-name"
               @click="onSelectGroupMember(item.raw)"
             >
               {{ item.raw.name }} ({{ item.raw.nickname }})
             </div>
           </div>
         </template>
-        <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
+        <template #footer="{ page, pageCount, prevPage, nextPage }">
           <div class="d-flex align-center justify-center pa-4">
             <v-btn
               :disabled="page === 1"
               density="comfortable"
               icon="mdi-arrow-left"
-              variant="tonal"
               rounded
+              variant="tonal"
               @click="prevPage"
-            ></v-btn>
+            />
 
             <div class="mx-2 text-caption">Page {{ page }} of {{ pageCount }}</div>
 
@@ -54,10 +54,10 @@
               :disabled="page >= pageCount"
               density="comfortable"
               icon="mdi-arrow-right"
-              variant="tonal"
               rounded
+              variant="tonal"
               @click="nextPage"
-            ></v-btn>
+            />
           </div>
         </template>
       </v-data-iterator>
@@ -76,8 +76,8 @@
               v-for="(selectedMembers, index) in nonTeamSelectedMembers"
               :key="index"
               class="select-tier-table d-flex"
-              @dragstart="startDrag($event, index)"
               draggable="true"
+              @dragstart="startDrag($event, index)"
             >
               <p class="tier-table-left d-flex justify-center align-center text-center">
                 {{ selectedMembers.name }}<br />
@@ -108,9 +108,9 @@
             <tr v-for="(position, index) in positionList" :key="index">
               <td>{{ position.label }}</td>
               <td
-                @drop.prevent="onDrop($event, 0, position.value)"
                 @dragenter.prevent
                 @dragover.prevent
+                @drop.prevent="onDrop($event, 0, position.value)"
               >
                 <div
                   v-if="teamList[0][position.value]"
@@ -136,9 +136,9 @@
                 </div>
               </td>
               <td
-                @drop.prevent="onDrop($event, 1, position.value)"
                 @dragenter.prevent
                 @dragover.prevent
+                @drop.prevent="onDrop($event, 1, position.value)"
               >
                 <div
                   v-if="teamList[1][position.value]"
@@ -181,55 +181,55 @@
 </template>
 
 <script setup lang="ts">
-import { LINE } from '@/constants/tier'
-import { useUsersStore, type GroupMember, type Position, type User } from '@/stores/users'
-import { computed, ref } from 'vue'
+import { LINE } from '@/constants/tier';
+import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
+import { computed, ref } from 'vue';
 
-const usersStore = useUsersStore()
+const usersStore = useUsersStore();
 
 const positionList = [
   {
     label: '탑',
-    value: 'top'
+    value: 'top',
   },
   {
     label: '정글',
-    value: 'jungle'
+    value: 'jungle',
   },
   {
     label: '미드',
-    value: 'mid'
+    value: 'mid',
   },
   {
     label: '원딜',
-    value: 'adc'
+    value: 'adc',
   },
   {
     label: '서폿',
-    value: 'sup'
-  }
-] as const
+    value: 'sup',
+  },
+] as const;
 
-const search = ref('')
+const search = ref('');
 
 const parsingGroupMembmers = computed(() => {
-  return usersStore.groupMembers
-})
+  return usersStore.groupMembers;
+});
 
-const selectedGroupMembers = ref<GroupMember[]>([])
-const isVisibleMessage = ref(false)
+const selectedGroupMembers = ref<GroupMember[]>([]);
+const isVisibleMessage = ref(false);
 const onSelectGroupMember = (groupMember: GroupMember) => {
   const findGroupMemberIndex = selectedGroupMembers.value.findIndex(
     (item) => item.name === groupMember.name && item.nickname === groupMember.nickname
-  )
+  );
 
   if (findGroupMemberIndex !== -1) {
-    selectedGroupMembers.value.splice(findGroupMemberIndex, 1)
-    return
+    selectedGroupMembers.value.splice(findGroupMemberIndex, 1);
+    return;
   }
 
-  selectedGroupMembers.value.push(groupMember)
-}
+  selectedGroupMembers.value.push(groupMember);
+};
 
 const teamList = ref<Record<Position, GroupMember | null>[]>([
   {
@@ -237,106 +237,104 @@ const teamList = ref<Record<Position, GroupMember | null>[]>([
     jungle: null,
     mid: null,
     adc: null,
-    sup: null
+    sup: null,
   },
   {
     top: null,
     jungle: null,
     mid: null,
     adc: null,
-    sup: null
-  }
-])
+    sup: null,
+  },
+]);
 
 const sumPoints = computed(() => {
   const firstTeamPoints = Object.entries(teamList.value[0]).reduce((total, [key, value]) => {
-    const positionKey = key as Position
-    return total + (value?.positionScore[positionKey] || 0)
-  }, 0)
+    const positionKey = key as Position;
+    return total + (value?.positionScore[positionKey] || 0);
+  }, 0);
 
   const secondPoints = Object.entries(teamList.value[1]).reduce((total, [key, value]) => {
-    const positionKey = key as Position
-    return total + (value?.positionScore[positionKey] || 0)
-  }, 0)
+    const positionKey = key as Position;
+    return total + (value?.positionScore[positionKey] || 0);
+  }, 0);
 
-  return [firstTeamPoints, secondPoints]
-})
+  return [firstTeamPoints, secondPoints];
+});
 
 const selectedUserStyle = (groupMember: GroupMember) => {
-  const findGroupMember = selectedGroupMembers.value.find((item) => item.id === groupMember.id)
+  const findGroupMember = selectedGroupMembers.value.find((item) => item.id === groupMember.id);
 
-  return findGroupMember ? 'selected-user' : ''
-}
+  return findGroupMember ? 'selected-user' : '';
+};
 
 const nonTeamSelectedMembers = computed(() => {
-  const flatTeamList = teamList.value.flatMap((team) => Object.values(team).flat())
+  const flatTeamList = teamList.value.flatMap((team) => Object.values(team).flat());
   const filterTeamList = selectedGroupMembers.value.filter(
     (originUser) =>
       !flatTeamList.find(
         (user) => user?.name === originUser.name && user?.nickname === originUser.nickname
       )
-  )
+  );
 
-  return filterTeamList
-})
+  return filterTeamList;
+});
 
 const startDrag = (e: DragEvent, index: number) => {
   if (e.dataTransfer) {
-    e.dataTransfer.setData('selectedGroupMemberIndex', `${index}`)
+    e.dataTransfer.setData('selectedGroupMemberIndex', `${index}`);
   }
-}
+};
 
 const changeDrag = (e: DragEvent, teamNumber: number, position: Position) => {
   if (e.dataTransfer) {
-    e.dataTransfer.setData('dragType', 'change')
-    e.dataTransfer.setData('teamNumber', `${teamNumber}`)
-    e.dataTransfer.setData('position', position)
+    e.dataTransfer.setData('dragType', 'change');
+    e.dataTransfer.setData('teamNumber', `${teamNumber}`);
+    e.dataTransfer.setData('position', position);
   }
-}
+};
 
 const getMainPostionAndSubPosition = (groupMember: GroupMember) => {
-  const mainPositionScore = groupMember.positionScore[groupMember.mainPosition]
+  const mainPositionScore = groupMember.positionScore[groupMember.mainPosition];
   const position: Partial<Record<Position, number>> = {
-    [groupMember.mainPosition]: mainPositionScore
-  }
+    [groupMember.mainPosition]: mainPositionScore,
+  };
 
   if (groupMember.subPosition) {
-    position[groupMember.subPosition] = groupMember.positionScore[groupMember.subPosition]
+    position[groupMember.subPosition] = groupMember.positionScore[groupMember.subPosition];
   }
 
-  return position
-}
+  return position;
+};
 
 const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
   if (e.dataTransfer) {
     if (e.dataTransfer.getData('dragType') === 'change') {
-      const originTeamNumber = Number(e.dataTransfer.getData('teamNumber'))
-      const originTeamPosition = e.dataTransfer.getData('position') as Position
-      const originMember = teamList.value[originTeamNumber][originTeamPosition] as GroupMember
-      const changeTeamMember = teamList.value[teamNumber][position]
+      const originTeamNumber = Number(e.dataTransfer.getData('teamNumber'));
+      const originTeamPosition = e.dataTransfer.getData('position') as Position;
+      const originMember = teamList.value[originTeamNumber][originTeamPosition] as GroupMember;
+      const changeTeamMember = teamList.value[teamNumber][position];
 
       const findOriginMember = selectedGroupMembers.value.find((member) => {
-        return member.id === originMember.id
-      })
-      teamList.value[teamNumber][position] = findOriginMember || null
+        return member.id === originMember.id;
+      });
+      teamList.value[teamNumber][position] = findOriginMember || null;
       if (changeTeamMember === null) {
-        teamList.value[originTeamNumber][originTeamPosition] = null
-        return
+        teamList.value[originTeamNumber][originTeamPosition] = null;
+        return;
       }
 
       const findChangeUser = selectedGroupMembers.value.find((member) => {
-        return member.id === changeTeamMember.id
-      })
-      teamList.value[originTeamNumber][originTeamPosition] = findChangeUser || null
-      return
+        return member.id === changeTeamMember.id;
+      });
+      teamList.value[originTeamNumber][originTeamPosition] = findChangeUser || null;
+      return;
     }
 
-    const index = Number(e.dataTransfer.getData('selectedGroupMemberIndex'))
-    teamList.value[teamNumber][position] = nonTeamSelectedMembers.value[index]
-
-    return
+    const index = Number(e.dataTransfer.getData('selectedGroupMemberIndex'));
+    teamList.value[teamNumber][position] = nonTeamSelectedMembers.value[index];
   }
-}
+};
 </script>
 
 <style scoped lang="scss">

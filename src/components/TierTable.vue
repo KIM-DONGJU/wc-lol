@@ -1,13 +1,13 @@
 <template>
   <div class="tier-table-root">
     <div class="wrap-input">
-      <label for="searchChampion" class="label"></label>
+      <label class="label" for="searchChampion"></label>
       <input
-        v-model="searchInput"
         id="searchChampion"
+        v-model="searchInput"
+        autocomplete="false"
         class="search-input"
         name="search"
-        autocomplete="false"
         placeholder="이름, 닉네임 검색"
       />
     </div>
@@ -15,8 +15,8 @@
       <p
         v-for="header in headerList"
         :key="header.value"
-        class="tier-header"
         :class="isSelectStyle(header.value)"
+        class="tier-header"
         @click="searchTierByLine(header.value)"
       >
         {{ header.title }}
@@ -30,7 +30,7 @@
         <p>포지션</p>
         <p>모스트 챔피언</p>
       </header>
-      <div class="tier-table" v-for="(userTier, index) in groupMemberList" :key="index">
+      <div v-for="(userTier, index) in groupMemberList" :key="index" class="tier-table">
         <p>
           {{ userTier.point }}
         </p>
@@ -52,53 +52,53 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { USER_TIER } from '@/constants/routes'
-import { useUsersStore, type Position } from '@/stores/users'
+import { USER_TIER } from '@/constants/routes';
+import { type Position, useUsersStore } from '@/stores/users';
 
-import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg'
-import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg'
-import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg'
-import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg'
-import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg'
+import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
+import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
+import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
+import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
+import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
 
-const router = useRouter()
+const router = useRouter();
 
 const headerList = [
   {
     title: '전체',
-    value: 'all'
+    value: 'all',
   },
   {
     title: '탑',
-    value: 'top'
+    value: 'top',
   },
   {
     title: '미드',
-    value: 'mid'
+    value: 'mid',
   },
   {
     title: '정글',
-    value: 'jungle'
+    value: 'jungle',
   },
   {
     title: '원딜',
-    value: 'adc'
+    value: 'adc',
   },
   {
     title: '서폿',
-    value: 'sup'
-  }
-]
+    value: 'sup',
+  },
+];
 
-const usersStore = useUsersStore()
+const usersStore = useUsersStore();
 
-const searchInput = ref('')
+const searchInput = ref('');
 
 const groupMemberList = computed(() => {
-  const position = (router.currentRoute.value.params.position || 'all') as Position | 'all'
+  const position = (router.currentRoute.value.params.position || 'all') as Position | 'all';
 
   const parsingGroupMembmers = usersStore.groupMembers
     .flatMap((groupMember) => {
@@ -109,9 +109,9 @@ const groupMemberList = computed(() => {
           position: groupMember.mainPosition,
           point: groupMember.positionScore[groupMember.mainPosition],
           mainPosition: groupMember.mainPosition,
-          subPosition: groupMember.subPosition
-        }
-      ]
+          subPosition: groupMember.subPosition,
+        },
+      ];
 
       if (groupMember.subPosition) {
         member.push({
@@ -120,64 +120,64 @@ const groupMemberList = computed(() => {
           position: groupMember.subPosition,
           point: groupMember.positionScore[groupMember.subPosition],
           mainPosition: groupMember.mainPosition,
-          subPosition: groupMember.subPosition
-        })
+          subPosition: groupMember.subPosition,
+        });
       }
 
-      return member
+      return member;
     })
     .filter(
       (member) =>
         member.nickname.includes(searchInput.value.trim()) ||
         member.name.includes(searchInput.value.trim())
     )
-    .sort((a, b) => b.point - a.point)
+    .sort((a, b) => b.point - a.point);
 
   if (position === 'all') {
-    return parsingGroupMembmers
+    return parsingGroupMembmers;
   }
 
   const filterGroupMembers = parsingGroupMembmers.filter(
     (member) =>
       member.position === position &&
       (member.mainPosition === position || member.subPosition === position)
-  )
+  );
 
-  return filterGroupMembers
-})
+  return filterGroupMembers;
+});
 
 const searchTierByLine = (position: string) => {
   router.push({
     name: USER_TIER.name,
     params: {
-      position: position
+      position,
     },
-    replace: true
-  })
-}
+    replace: true,
+  });
+};
 
 const isSelectStyle = (position: string) => {
   if (!router.currentRoute.value.params.position && position === 'all') {
-    return 'tier-header-selected'
+    return 'tier-header-selected';
   }
 
-  return router.currentRoute.value.params.position === position ? 'tier-header-selected' : ''
-}
+  return router.currentRoute.value.params.position === position ? 'tier-header-selected' : '';
+};
 
 const getPositionImage = (position: string) => {
   switch (position) {
     case 'top':
-      return top
+      return top;
     case 'mid':
-      return mid
+      return mid;
     case 'jungle':
-      return jungle
+      return jungle;
     case 'adc':
-      return adc
+      return adc;
     case 'sup':
-      return sup
+      return sup;
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
