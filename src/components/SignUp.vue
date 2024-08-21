@@ -4,7 +4,12 @@
     <form @submit.prevent="handleSubmit">
       <div class="inputs">
         <label for="name">이름</label>
-        <input type="text" id="name" placeholder="이름을 작성해주세요(예: 홍길동)" v-model="name" />
+        <input
+          type="text"
+          id="name"
+          placeholder="이름을 작성해주세요(예: 홍길동)"
+          v-model="userInfo.name"
+        />
         <p v-if="errorMessage.name" class="error__message">{{ errorMessage.name }}</p>
 
         <label for="nickname">롤 닉네임</label>
@@ -12,7 +17,7 @@
           type="text"
           id="nickname"
           placeholder="롤 닉네임을 작성해주세요(예: 괴롭혀주십시오)"
-          v-model="nickname"
+          v-model="userInfo.nickname"
         />
         <p v-if="errorMessage.nickname" class="error__message">{{ errorMessage.nickname }}</p>
 
@@ -21,7 +26,7 @@
           type="email"
           id="email"
           placeholder="이메일을 작성해주세요(예: example@example.com)"
-          v-model="email"
+          v-model="userInfo.email"
         />
         <p v-if="errorMessage.email" class="error__message">{{ errorMessage.email }}</p>
 
@@ -30,7 +35,7 @@
           type="password"
           id="password"
           placeholder="최대12자로 작성해주세요"
-          v-model="password"
+          v-model="userInfo.password"
           maxlength="12"
         />
         <p v-if="errorMessage.password" class="error__message">{{ errorMessage.password }}</p>
@@ -88,7 +93,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, reactive } from 'vue'
 
 import top from '../assets/images/icon/01-icon-01-lol-icon-position-top.svg'
 import jungle from '../assets/images/icon/01-icon-01-lol-icon-position-jng.svg'
@@ -101,10 +106,14 @@ const goBack = () => {
   router.back()
 }
 
-const name = ref('')
-const nickname = ref('')
-const email = ref('')
-const password = ref('')
+// 기존의 user의 정보를 따로 저장하는거에서 reactive()를 사용하여 한꺼번에 정보를 전달.
+const userInfo = reactive({
+  name: '',
+  nickname: '',
+  email: '',
+  password: ''
+})
+
 const errorMessage = ref({
   name: '',
   nickname: '',
@@ -171,22 +180,22 @@ const handleSubmit = () => {
   let valid = true
   errorMessage.value = { name: '', nickname: '', email: '', password: '', position: '' }
   // 유효성 검사
-  if (!name.value) {
+  if (!userInfo.name) {
     errorMessage.value.name = '이름을 입력해주세요.'
     valid = false
   }
 
-  if (!nickname.value) {
+  if (!userInfo.nickname) {
     errorMessage.value.nickname = '롤 닉네임을 입력해주세요.'
     valid = false
   }
 
-  if (!email.value) {
+  if (!userInfo.email) {
     errorMessage.value.email = '이메일을 입력해주세요.'
     valid = false
   }
 
-  if (!password.value) {
+  if (!userInfo.password) {
     errorMessage.value.password = '비밀번호를 입력해주세요.'
     valid = false
   }
@@ -200,10 +209,10 @@ const handleSubmit = () => {
 
   // 유효성 검사 통과 시 데이터 제출
   const formData = {
-    name: name.value,
-    nickname: nickname.value,
-    email: email.value,
-    password: password.value,
+    name: userInfo.name,
+    nickname: userInfo.nickname,
+    email: userInfo.email,
+    password: userInfo.password,
     positions: positions.value.map((position, index) => ({
       position: position.value,
       points: selectedPoints.value[index],
@@ -216,43 +225,49 @@ const handleSubmit = () => {
 }
 
 // 실시간 에러 초기화 (watch 사용)
-watch(name, () => {
-  if (errorMessage.value.name) {
-    errorMessage.value.name = ''
+watch(
+  () => userInfo.name,
+  () => {
+    errorMessage.value.name = userInfo.name ? '' : '이름을 입력해주세요.'
   }
-})
+)
 
-watch(nickname, () => {
-  if (errorMessage.value.nickname) {
-    errorMessage.value.nickname = ''
+watch(
+  () => userInfo.nickname,
+  () => {
+    errorMessage.value.nickname = userInfo.nickname ? ' ' : '롤 닉네임을 입력해주세요.'
   }
-})
+)
 
-watch(email, () => {
-  if (errorMessage.value.email) {
-    errorMessage.value.email = ''
+watch(
+  () => userInfo.email,
+  () => {
+    errorMessage.value.email = userInfo.email ? '' : '이메일을 입력해주세요.'
   }
-})
+)
 
-watch(password, () => {
-  if (errorMessage.value.password) {
-    errorMessage.value.password = ''
+watch(
+  () => userInfo.password,
+  () => {
+    errorMessage.value.password = userInfo.password ? '' : '비밀번호를 입력해주세요.'
   }
-})
+)
 
 // 포지션 변경 시 에러 메시지 초기화
 watch(
   [selectedMain, selectedSub],
   () => {
-    if (mainCount.value > 0 && subCount.value > 0) {
+    if (mainCount.value > 0 || subCount.value > 0) {
       errorMessage.value.position = ''
+    } else {
+      errorMessage.value.position = '주 포지션과 부 포지션을 각각 하나씩 선택해주세요.'
     }
   },
   { deep: true }
 )
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 $opa: 0.6;
 $color: #5282e6;
 
