@@ -351,32 +351,32 @@ const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
     }
 
     .wrap-search-users-info {
-      width: 100%;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
+      width: 100%;
 
       .user-name {
+        box-sizing: border-box;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         height: 50px;
         padding: 0 10px;
-        box-sizing: border-box;
-        border: solid 1px #5382e8;
-        border-radius: 4px;
         font-size: 14px;
-        text-align: center;
         line-height: 20px;
-        cursor: pointer;
-        white-space: normal; /* 기본값으로 줄바꿈을 허용 */
+        text-align: center;
         word-break: keep-all; /* 단어 단위로 줄바꿈 */
         overflow-wrap: break-word;
+        white-space: normal; /* 기본값으로 줄바꿈을 허용 */
+        cursor: pointer;
+        border: solid 1px #5382e8;
+        border-radius: 4px;
       }
 
       .selected-user {
-        background-color: #5382e8;
         color: #fff;
+        background-color: #5382e8;
       }
     }
   }
@@ -384,8 +384,8 @@ const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
   .wrap-today-participant {
     display: flex;
     justify-content: center;
-    padding: 20px 10px;
     width: 100%;
+    padding: 20px 10px;
 
     .wrap-tables {
       width: 100%;
@@ -398,21 +398,21 @@ const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
           gap: 12px;
 
           .select-tier-table {
-            border: solid 1px #5382e8;
             width: 320px;
-            border-radius: 4px;
             cursor: pointer;
+            border: solid 1px #5382e8;
+            border-radius: 4px;
 
             .tier-table-left {
-              border-right: solid 1px #5382e8;
-              padding: 10px;
               width: 50%;
+              padding: 10px;
+              border-right: solid 1px #5382e8;
             }
 
             .tier-table-right {
+              gap: 5px;
               width: 50%;
               padding: 10px;
-              gap: 5px;
             }
           }
         }
@@ -420,9 +420,9 @@ const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
     }
 
     .participant-table {
-      border-spacing: 0;
-      table-layout: fixed;
       height: 400px;
+      table-layout: fixed;
+      border-spacing: 0;
 
       th {
         height: 25px;
@@ -434,26 +434,26 @@ const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
 
       th,
       td {
+        box-sizing: border-box;
+        padding: 10px;
         text-align: center;
         vertical-align: middle;
         border: solid 1px #000;
-        padding: 10px;
-        box-sizing: border-box;
 
         &:first-child,
         &:first-of-type {
-          border-left-width: 0;
           border-top-width: 0;
+          border-left-width: 0;
         }
       }
 
       .position-user {
         gap: 10px;
-        border: solid 1px #5382e8;
         width: 320px;
-        border-radius: 4px;
-        cursor: pointer;
         padding: 10px;
+        cursor: pointer;
+        border: solid 1px #5382e8;
+        border-radius: 4px;
       }
 
       .header {

@@ -184,36 +184,36 @@ const getPositionImage = (position: string) => {
 .tier-table-root {
   .wrap-input {
     position: relative;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     height: 40px;
-    border: 1px solid rgb(83, 131, 232);
-    box-sizing: border-box;
+    border: 1px solid rgb(83 131 232);
     border-radius: 4px;
 
     .label {
-      display: block;
-      color: transparent;
-      background-color: rgb(154, 164, 175);
-      mask: url(https://s-lol-web.op.gg/images/icon/icon-search.svg) center center / contain
-        no-repeat;
       position: absolute;
       top: 6px;
       left: 16px;
+      display: block;
       width: 28px;
       height: 28px;
-      transition: background-color 0.3s linear 0s;
+      color: transparent;
       cursor: default;
+      background-color: rgb(154 164 175);
+      mask: url("https://s-lol-web.op.gg/images/icon/icon-search.svg") center center / contain
+        no-repeat;
+      transition: background-color 0.3s linear 0s;
     }
 
     .search-input {
+      box-sizing: border-box;
       width: 100%;
       height: 100%;
-      padding: 0px 12px 0px 60px;
+      padding: 0 12px 0 60px;
       color: #202d37;
-      box-sizing: border-box;
-      border-radius: 4px;
       border: none;
+      border-radius: 4px;
       outline: none !important;
 
       &:focus {
@@ -224,24 +224,24 @@ const getPositionImage = (position: string) => {
   }
 
   .wrap-tier-header {
-    margin-top: 12px;
     display: flex;
     align-items: center;
+    margin-top: 12px;
     border-radius: 4px;
 
     .tier-header {
-      min-width: 100px;
-      font-size: 14px;
-      height: 40px;
+      box-sizing: border-box;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      min-width: 100px;
+      height: 40px;
+      font-size: 14px;
+      cursor: pointer;
       background-repeat: no-repeat;
       -webkit-background-position: center;
       background-position: center;
       border: solid 1px #dbe0e4;
-      box-sizing: border-box;
-      cursor: pointer;
 
       &:not(:last-child) {
         border-right-width: 0;
@@ -249,62 +249,62 @@ const getPositionImage = (position: string) => {
     }
 
     .tier-header-selected {
+      font-weight: bold;
       color: #fff;
       background-color: #5383e8;
-      font-weight: bold;
     }
   }
 
   .wrap-tier-table {
     .tier-table-header {
-      width: 100%;
+      box-sizing: border-box;
       display: grid;
-      gap: 5px;
       grid-template-columns: 1fr 3fr 2fr 1fr 2fr;
+      gap: 5px;
+      width: 100%;
+      height: 32px;
+      padding: 4px 8px;
+      margin-top: 12px;
       background-color: #f7f7f9;
       border-radius: 4px 4px 0 0;
-      padding: 4px 8px;
-      box-sizing: border-box;
-      margin-top: 12px;
-      height: 32px;
 
       > p {
-        font-size: 12px;
-        color: #9aa4af;
         box-sizing: border-box;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #9aa4af;
       }
     }
 
     .tier-table {
-      width: 100%;
+      box-sizing: border-box;
       display: grid;
       grid-template-columns: 1fr 3fr 2fr 1fr 2fr;
       gap: 5px;
-      border-radius: 4px 4px 0 0;
-      padding: 4px 8px;
-      box-sizing: border-box;
+      width: 100%;
       height: 32px;
+      padding: 4px 8px;
       border-bottom: solid 1px #ebeef1;
+      border-radius: 4px 4px 0 0;
 
       > p {
-        font-size: 14px;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
+        font-size: 14px;
       }
     }
   }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (width <= 1024px) {
   .tier-table-root {
     .wrap-tier-header {
       .tier-header {
-        min-width: 40px;
         flex: 1;
+        min-width: 40px;
         font-size: 12px;
       }
     }

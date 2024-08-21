@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
+import StylelintPlugin from 'vite-plugin-stylelint';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,6 +15,12 @@ export default defineConfig({
     vueDevTools(),
     vuetify({
       autoImport: true,
+    }),
+    StylelintPlugin({
+      // Plugin options go here
+      include: ['src/**/*.{vue,css,scss,sass}'],
+      exclude: ['node_modules'],
+      fix: true,
     }),
   ],
   resolve: {

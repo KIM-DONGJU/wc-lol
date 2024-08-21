@@ -72,43 +72,43 @@ const isLoginUser = computed(() => authStore.user);
 </script>
 <style lang="scss" scoped>
 .nav-root {
-  background-color: #5383e8;
   display: flex;
   justify-content: center;
   padding: 0 30px;
   margin-bottom: 20px;
+  background-color: #5383e8;
 
   .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
     max-width: 1280px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 
     .wrap-left {
       display: flex;
-      align-items: center;
       gap: 20px;
+      align-items: center;
 
       > a {
-        text-decoration: none;
-        color: #b3cdff;
-        font-size: 14px;
         padding: 10px 0 9px;
+        font-size: 14px;
+        color: #b3cdff;
+        text-decoration: none;
       }
 
       > .current-path {
-        color: #fff;
-        font-weight: bold;
-        border-bottom: 3px solid #fff;
         box-sizing: border-box;
+        font-weight: bold;
+        color: #fff;
+        border-bottom: 3px solid #fff;
       }
     }
 
     .wrap-login {
       display: flex;
-      align-items: center;
       gap: 10px;
+      align-items: center;
       cursor: pointer;
 
       > a {
@@ -127,7 +127,7 @@ const isLoginUser = computed(() => authStore.user);
   }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (width <= 1024px) {
   .nav-root {
     padding: 0 15px;
     margin-bottom: 20px;
@@ -138,9 +138,6 @@ const isLoginUser = computed(() => authStore.user);
 
         > a {
           font-size: 12px;
-        }
-
-        > .current-path {
         }
       }
 

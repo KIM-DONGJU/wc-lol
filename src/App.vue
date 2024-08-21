@@ -15,4 +15,3 @@ const authStore = useAuthStore();
 usersStore.getGroupMembers();
 authStore.initUserData();
 </script>
-<style lang="scss"></style>

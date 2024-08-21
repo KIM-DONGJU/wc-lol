@@ -74,9 +74,9 @@ const onGoogleLoginSuccess = (googleUser: any) => {
 
 <style scoped lang="scss">
 .login-root {
-  min-height: 400px;
-  height: calc(100vh - 53px);
   display: flex;
   align-items: center;
+  height: calc(100vh - 53px);
+  min-height: 400px;
 }
 </style>
