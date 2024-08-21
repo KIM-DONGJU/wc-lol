@@ -417,7 +417,7 @@ const isFormValid = computed(() => {
     name.value.trim() !== '' &&
     nickname.value.trim() !== '' &&
     email.value.trim() !== '' &&
-    password.value.length >= 12 &&
+    password.value.length >= 8 &&
     selectedMainPosition.value &&
     mainPositionScore.value !== null &&
     selectedSubPosition.value &&
@@ -472,8 +472,14 @@ const submitForm = (event: Event) => {
     mainPosition: selectedMainPosition.value,
     mainPositionScore: mainPositionScore.value,
     subPosition: selectedSubPosition.value,
-    subPositionScore: subPositionScore.value
+    subPositionScore: subPositionScore.value,
+    remainPositionScores: {} as Record<string, number | null>
   }
+
+  // 남은 포지션 점수를 formData에 추가
+  remainPositions.value.forEach((position) => {
+    formData.remainPositionScores[position.value] = remainPoints.value[position.value]
+  })
 
   console.log('회원가입 데이터:', formData)
 }

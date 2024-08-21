@@ -20,11 +20,11 @@ const router = createRouter({
       component: () => import('@/views/CreateMatchView.vue')
     },
     {
-<<<<<<< HEAD
       path: '/signup',
       name: 'SignUp',
       component: () => import('../components/SignUp.vue')
-=======
+    },
+    {
       path: LOGIN.path,
       name: LOGIN.name,
       component: () => import('@/views/LoginView.vue'),
@@ -36,7 +36,6 @@ const router = createRouter({
           next()
         }
       }
->>>>>>> master
     }
   ]
 })
