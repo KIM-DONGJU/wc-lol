@@ -1,4 +1,4 @@
-<template>
+<template v-if="!isLoginUser">
   <div class="nav-root">
     <nav class="nav">
       <div class="wrap-left">
@@ -13,8 +13,11 @@
       </div>
       <div class="wrap-login">
         <img src="@/assets/images/icon/my-page.svg" />
-        <router-link v-if="!isLoginUser" :to="LOGIN.path">
+        <router-link :to="LOGIN.path">
           <p class="login">로그인</p>
+        </router-link>
+        <router-link style="text-decoration: none" to="/signup">
+          <p class="signup">회원가입</p>
         </router-link>
       </div>
     </nav>
@@ -113,6 +116,10 @@ const isLoginUser = computed(() => authStore.user)
       }
 
       .login {
+        font-size: 14px;
+        color: #b3cdff;
+      }
+      .signup {
         font-size: 14px;
         color: #b3cdff;
       }
