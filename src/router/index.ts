@@ -1,6 +1,6 @@
-import { CREATE_MATCH, LOGIN, NOT_FOUND, USER_TIER } from '@/constants/routes'
-import { useAuthStore } from '@/stores/auth'
-import { createRouter, createWebHistory } from 'vue-router'
+import { CREATE_MATCH, LOGIN, NOT_FOUND, USER_TIER } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth';
+import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,16 +8,16 @@ const router = createRouter({
     {
       path: USER_TIER.path,
       name: USER_TIER.name,
-      component: () => import('@/views/UserTierView.vue')
+      component: () => import('@/views/UserTierView.vue'),
     },
     {
       path: NOT_FOUND.path,
-      redirect: '/user-tier/all'
+      redirect: '/user-tier/all',
     },
     {
       path: CREATE_MATCH.path,
       name: CREATE_MATCH.name,
-      component: () => import('@/views/CreateMatchView.vue')
+      component: () => import('@/views/CreateMatchView.vue'),
     },
     {
       path: '/signup',
@@ -29,15 +29,15 @@ const router = createRouter({
       name: LOGIN.name,
       component: () => import('@/views/LoginView.vue'),
       beforeEnter: (to, from, next) => {
-        const authStore = useAuthStore()
+        const authStore = useAuthStore();
         if (authStore.user) {
-          next({ name: 'userTier', params: { position: 'all' } })
+          next({ name: 'userTier', params: { position: 'all' } });
         } else {
-          next()
+          next();
         }
-      }
-    }
-  ]
-})
+      },
+    },
+  ],
+});
 
-export default router
+export default router;

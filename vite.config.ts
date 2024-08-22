@@ -1,25 +1,32 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from 'node:url';
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
+import StylelintPlugin from 'vite-plugin-stylelint';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: { transformAssetUrls },
     }),
     vueDevTools(),
     vuetify({
-      autoImport: true
-    })
+      autoImport: true,
+    }),
+    StylelintPlugin({
+      // Plugin options go here
+      include: ['src/**/*.{vue,css,scss,sass}'],
+      exclude: ['node_modules'],
+      fix: true,
+    }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    extensions: ['.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.vue']
-  }
-})
+    extensions: ['.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.vue'],
+  },
+});
