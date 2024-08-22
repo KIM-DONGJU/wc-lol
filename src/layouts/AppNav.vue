@@ -119,6 +119,7 @@ const isLoginUser = computed(() => authStore.user);
         font-size: 14px;
         color: #b3cdff;
       }
+
       .signup {
         font-size: 14px;
         color: #b3cdff;

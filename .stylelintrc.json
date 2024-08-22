@@ -5,5 +5,9 @@
     "stylelint-config-prettier-scss",
     "stylelint-config-recess-order"
   ],
-  "plugins": ["stylelint-order"]
+  "plugins": ["stylelint-order"],
+  "rules": {
+    "selector-class-pattern": null,
+    "selector-id-pattern": null
+  }
 }
