@@ -105,8 +105,10 @@
       </div>
       <!-- 버튼들 -->
       <div class="btns">
-        <button @click="goBack">뒤로가기</button>
-        <button type="submit">가입하기</button>
+        <VBtn :color="styles.primary" size="large" variant="outlined" @click="goBack">
+          뒤로가기
+        </VBtn>
+        <VBtn :color="styles.primary" size="large" variant="tonal" type="submit">가입하기</VBtn>
       </div>
     </form>
   </div>
@@ -116,16 +118,16 @@
 import { useRouter } from 'vue-router';
 import { computed, reactive, ref, watch } from 'vue';
 
+import { supabase } from '@/supabase';
 import type { Position } from '@/stores/users';
 
 import styles from '@/styles/_export.module.scss';
 
-import top from '../assets/images/icon/01-icon-01-lol-icon-position-top.svg';
-import jungle from '../assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
-import mid from '../assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
-import adc from '../assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
-import sup from '../assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
-import { supabase } from '@/supabase';
+import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
+import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
+import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
+import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
+import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
 
 const router = useRouter();
 const goBack = () => {
@@ -344,7 +346,7 @@ $opa: 0.6;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 50px 0;
+  padding: 30px 0;
 
   label {
     margin-bottom: 15px;
@@ -431,19 +433,19 @@ $opa: 0.6;
     display: flex;
     justify-content: space-between;
 
-    button {
-      padding: 20px 15px;
-      font-size: 17px;
-      color: white;
-      background-color: $color-primary;
-      border-radius: 12px;
-      transition: all 0.5s ease-in-out;
+    // button {
+    //   padding: 20px 15px;
+    //   font-size: 17px;
+    //   color: white;
+    //   background-color: $color-primary;
+    //   border-radius: 12px;
+    //   transition: all 0.5s ease-in-out;
 
-      &:hover {
-        color: $color-primary;
-        background-color: rgb(0 0 0 / 10%);
-      }
-    }
+    //   &:hover {
+    //     color: $color-primary;
+    //     background-color: rgb(0 0 0 / 10%);
+    //   }
+    // }
   }
 
   .error__message {

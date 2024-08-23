@@ -1,14 +1,17 @@
 <template>
   <div class="tier-table-root">
     <div class="wrap-input">
-      <label class="label" for="searchChampion"></label>
-      <input
-        id="searchChampion"
+      <v-text-field
         v-model="searchInput"
-        autocomplete="false"
-        class="search-input"
-        name="search"
+        :base-color="styles.primary"
+        :color="styles.primary"
+        width="100%"
+        variant="outlined"
+        density="compact"
         placeholder="이름, 닉네임 검색"
+        prepend-inner-icon="mdi-magnify"
+        hide-details
+        clearable
       />
     </div>
     <header class="wrap-tier-header">
@@ -30,7 +33,7 @@
         <p>포지션</p>
         <p>모스트 챔피언</p>
       </header>
-      <div v-for="(userTier, index) in groupMemberList" :key="index" class="tier-table">
+      <div v-for="(userTier, index) in groupMembers" :key="index" class="tier-table">
         <p>
           {{ userTier.point }}
         </p>
@@ -57,6 +60,8 @@ import { useRouter } from 'vue-router';
 
 import { USER_TIER } from '@/constants/routes';
 import { type Position, useUsersStore } from '@/stores/users';
+
+import styles from '@/styles/_export.module.scss';
 
 import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
 import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
@@ -97,10 +102,10 @@ const usersStore = useUsersStore();
 
 const searchInput = ref('');
 
-const groupMemberList = computed(() => {
+const groupMembers = computed(() => {
   const position = (router.currentRoute.value.params.position || 'all') as Position | 'all';
 
-  const parsingGroupMembmers = usersStore.groupMembers
+  const parsingGroupMembers = usersStore.groupMembers
     .flatMap((groupMember) => {
       const member = [
         {
@@ -134,10 +139,10 @@ const groupMemberList = computed(() => {
     .sort((a, b) => b.point - a.point);
 
   if (position === 'all') {
-    return parsingGroupMembmers;
+    return parsingGroupMembers;
   }
 
-  const filterGroupMembers = parsingGroupMembmers.filter(
+  const filterGroupMembers = parsingGroupMembers.filter(
     (member) =>
       member.position === position &&
       (member.mainPosition === position || member.subPosition === position)
@@ -182,46 +187,8 @@ const getPositionImage = (position: string) => {
 
 <style scoped lang="scss">
 .tier-table-root {
-  .wrap-input {
-    position: relative;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    height: 40px;
-    border: 1px solid rgb(83 131 232);
-    border-radius: 4px;
-
-    .label {
-      position: absolute;
-      top: 6px;
-      left: 16px;
-      display: block;
-      width: 28px;
-      height: 28px;
-      color: transparent;
-      cursor: default;
-      background-color: rgb(154 164 175);
-      mask: url("https://s-lol-web.op.gg/images/icon/icon-search.svg") center center / contain
-        no-repeat;
-      transition: background-color 0.3s linear 0s;
-    }
-
-    .search-input {
-      box-sizing: border-box;
-      width: 100%;
-      height: 100%;
-      padding: 0 12px 0 60px;
-      color: #202d37;
-      border: none;
-      border-radius: 4px;
-      outline: none !important;
-
-      &:focus {
-        border: none !important;
-        outline: none !important;
-      }
-    }
-  }
+  width: 100%;
+  max-width: 600px;
 
   .wrap-tier-header {
     display: flex;

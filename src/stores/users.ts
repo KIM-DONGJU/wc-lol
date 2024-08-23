@@ -1,6 +1,8 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { supabase } from '@/supabase';
+
+import { useAuthStore } from './auth';
 
 export type Position = 'top' | 'mid' | 'sup' | 'jungle' | 'adc';
 
@@ -9,14 +11,6 @@ export interface User {
   nickname: string;
   point: number;
   position: Position;
-}
-
-interface UserList {
-  top: User[];
-  mid: User[];
-  sup: User[];
-  jungle: User[];
-  adc: User[];
 }
 
 interface PositionScore {
@@ -35,7 +29,7 @@ export interface GroupMember {
   nickname: string;
   mainPosition: Position;
   subPosition: Position | null;
-  userId: number | null;
+  userId: string | null;
   positionScore: PositionScore;
   role: 'member' | 'admin';
 }
@@ -43,6 +37,8 @@ export interface GroupMember {
 export const useUsersStore = defineStore(
   'users',
   () => {
+    const authStore = useAuthStore();
+
     const groupMembers = ref<GroupMember[]>([]);
     const setGroupMembers = (members: GroupMember[]) => {
       groupMembers.value = members;
@@ -61,7 +57,13 @@ export const useUsersStore = defineStore(
       }
     };
 
-    return { getGroupMembers, groupMembers };
+    const currentMemberInGroup = computed(() => {
+      return groupMembers.value.find((groupMember) => {
+        return groupMember.userId === authStore.user?.id;
+      });
+    });
+
+    return { getGroupMembers, groupMembers, currentMemberInGroup };
   },
   {
     persist: [

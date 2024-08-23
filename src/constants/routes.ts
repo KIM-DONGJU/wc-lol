@@ -18,6 +18,21 @@ export const LOGIN = {
   name: 'login',
 };
 
+export const SIGN_UP = {
+  path: '/sign-up',
+  name: 'signUp',
+};
+
+export const USER_LIST = {
+  path: '/user-list',
+  name: 'userList',
+};
+
+export const USER_DETAIL = {
+  path: '/user-detail/:id',
+  name: 'userDetail',
+};
+
 export const MATCH_HISTORY = {
   path: '/match-history',
   name: 'matchHistory',

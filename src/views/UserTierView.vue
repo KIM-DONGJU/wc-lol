@@ -12,6 +12,6 @@ import TierTable from '@/components/TierTable.vue';
 .user-tier-root {
   display: flex;
   justify-content: center;
-  padding: 0 10 20px;
+  padding: 0 10px 20px;
 }
 </style>
