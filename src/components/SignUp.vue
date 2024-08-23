@@ -6,81 +6,102 @@
         <label for="name">이름</label>
         <input
           id="name"
-          v-model="userInfo.name"
+          v-model="bindUserName"
           type="text"
           placeholder="이름을 작성해주세요(예: 홍길동)"
         />
-        <p v-if="errorMessage.name" class="error__message">{{ errorMessage.name }}</p>
-
+        <p v-if="errorMessage.name.isVisible" class="error__message">
+          {{ errorMessage.name.message }}
+        </p>
         <label for="nickname">롤 닉네임</label>
         <input
           id="nickname"
-          v-model="userInfo.nickname"
+          v-model="bindUserNickname"
           type="text"
           placeholder="롤 닉네임을 작성해주세요(예: 괴롭혀주십시오)"
         />
-        <p v-if="errorMessage.nickname" class="error__message">{{ errorMessage.nickname }}</p>
-
+        <p v-if="errorMessage.nickname.isVisible" class="error__message">
+          {{ errorMessage.nickname.message }}
+        </p>
         <label for="email">이메일</label>
         <input
           id="email"
-          v-model="userInfo.email"
+          v-model="bindUserEmail"
           type="email"
           placeholder="이메일을 작성해주세요(예: example@example.com)"
         />
-        <p v-if="errorMessage.email" class="error__message">{{ errorMessage.email }}</p>
+        <p v-if="errorMessage.email.isVisible" class="error__message">
+          {{ errorMessage.email.message }}
+        </p>
 
         <label for="password">비밀번호</label>
         <input
           id="password"
-          v-model="userInfo.password"
+          v-model="bindUserPassword"
           type="password"
           placeholder="최대12자로 작성해주세요"
           maxlength="12"
         />
-        <p v-if="errorMessage.password" class="error__message">{{ errorMessage.password }}</p>
+        <p v-if="errorMessage.password.isVisible" class="error__message">
+          {{ errorMessage.password.message }}
+        </p>
+        <label for="passwordCheck">비밀번호 확인</label>
+        <input
+          id="passwordCheck"
+          v-model="bindUserPasswordCheck"
+          type="password"
+          placeholder="최대12자로 작성해주세요"
+          maxlength="12"
+        />
+        <p v-if="errorMessage.passwordCheck.isVisible" class="error__message">
+          {{ errorMessage.passwordCheck.message }}
+        </p>
       </div>
 
-      <div v-for="(position, index) in positions" :key="position.value" class="position">
+      <div v-for="(position, key) in positions" :key="key" class="position">
         <div class="position__img">
           <span class="position__name">{{ position.label }}</span>
           <img :src="position.img" />
         </div>
 
-        <div class="position__select">
+        <div class="position__select w-100">
           <!-- 점수 선택 -->
           <div class="position__points">
-            <label :for="`points-${index}`">점수: </label>
-            <select :id="`points-${index}`" v-model="selectedPoints[index]">
-              <option v-for="point in points" :key="point.value" :value="point.value">
-                {{ point.label }} 점
-              </option>
-            </select>
+            <VSelect
+              v-model="selectedPoints[key]"
+              :items="points"
+              label="점수"
+              variant="outlined"
+              width="100%"
+              hide-details
+            />
           </div>
-
           <!-- 주 포지션 / 부 포지션 체크박스 -->
           <div class="position__checkbox">
-            <input
-              :id="`main-${index}`"
-              v-model="selectedMain[index]"
-              :disabled="disableCheckbox(index, 'main')"
-              type="checkbox"
-              @change="handleMainChange(index)"
+            <VCheckbox
+              v-model="selectedMain"
+              :value="key"
+              :color="styles.primary"
+              label="주 포지션"
+              hide-details
+              density="compact"
             />
-            <label id="main__position" :for="`main-${index}`">주 포지션</label>
-            <input
-              :id="`sub-${index}`"
-              v-model="selectedSub[index]"
-              :disabled="disableCheckbox(index, 'sub')"
-              type="checkbox"
-              @change="handleSubChange(index)"
+            <VCheckbox
+              v-model="selectedSub"
+              :value="key"
+              :color="styles.primary"
+              class="ml-3"
+              label="부 포지션"
+              hide-details
+              density="compact"
             />
-            <label :for="`sub-${index}`">부 포지션</label>
           </div>
         </div>
       </div>
       <div>
-        <p v-if="errorMessage.position" class="error__message">{{ errorMessage.position }}</p>
+        <p v-if="errorMessage.position.isVisible" class="error__message">
+          {{ errorMessage.position.message }}
+        </p>
       </div>
       <!-- 버튼들 -->
       <div class="btns">
@@ -95,11 +116,16 @@
 import { useRouter } from 'vue-router';
 import { computed, reactive, ref, watch } from 'vue';
 
+import type { Position } from '@/stores/users';
+
+import styles from '@/styles/_export.module.scss';
+
 import top from '../assets/images/icon/01-icon-01-lol-icon-position-top.svg';
 import jungle from '../assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
 import mid from '../assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
 import adc from '../assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
 import sup from '../assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
+import { supabase } from '@/supabase';
 
 const router = useRouter();
 const goBack = () => {
@@ -107,169 +133,211 @@ const goBack = () => {
 };
 
 // 기존의 user의 정보를 따로 저장하는거에서 reactive()를 사용하여 한꺼번에 정보를 전달.
-const userInfo = reactive({
+type UserInfoKey = 'name' | 'nickname' | 'email' | 'password' | 'passwordCheck';
+const userInfo = reactive<Record<UserInfoKey, string>>({
   name: '',
   nickname: '',
   email: '',
   password: '',
+  passwordCheck: '',
 });
 
-const errorMessage = ref({
-  name: '',
-  nickname: '',
-  email: '',
-  password: '',
-  position: '',
+const errorMessage = reactive({
+  name: {
+    isVisible: false,
+    message: '이름을 입력해주세요.',
+  },
+  nickname: {
+    isVisible: false,
+    message: '롤 닉네임을 입력해주세요.',
+  },
+  email: {
+    isVisible: false,
+    message: '이메일을 입력해주세요.',
+  },
+  password: {
+    isVisible: false,
+    message: '비밀번호를 입력해주세요.',
+  },
+  passwordCheck: {
+    isVisible: false,
+    message: '비밀번호가 일치하지 않습니다.',
+  },
+  position: {
+    isVisible: false,
+    message: '주 포지션을 선택해주세요.',
+  },
+});
+
+// watch로 하나하나의 데이터를 감시하는 것이 아닌 computed를 사용하여 감시.
+// 더 직관적이고 간결할 것으로 판단.
+const bindUserName = computed({
+  get: () => userInfo.name,
+  set: (value: string) => {
+    userInfo.name = value;
+    if (value) {
+      errorMessage.name.isVisible = false;
+    }
+  },
+});
+
+const bindUserNickname = computed({
+  get: () => userInfo.nickname,
+  set: (value: string) => {
+    userInfo.nickname = value;
+    if (value) {
+      errorMessage.nickname.isVisible = false;
+    }
+  },
+});
+
+const bindUserEmail = computed({
+  get: () => userInfo.email,
+  set: (value: string) => {
+    userInfo.email = value;
+    if (value) {
+      errorMessage.email.isVisible = false;
+    }
+  },
+});
+
+const bindUserPassword = computed({
+  get: () => userInfo.password,
+  set: (value: string) => {
+    userInfo.password = value;
+    if (value) {
+      errorMessage.password.isVisible = false;
+    }
+  },
+});
+
+let passwordCheckDebounceTimer: NodeJS.Timeout | null = null;
+const bindUserPasswordCheck = computed({
+  get: () => userInfo.passwordCheck,
+  set: (value: string) => {
+    userInfo.passwordCheck = value;
+    if (passwordCheckDebounceTimer) {
+      clearTimeout(passwordCheckDebounceTimer);
+    }
+
+    if (value && value === userInfo.password) {
+      errorMessage.passwordCheck.isVisible = false;
+    }
+
+    if (value !== userInfo.password) {
+      passwordCheckDebounceTimer = setTimeout(() => {
+        errorMessage.passwordCheck.isVisible = true;
+      }, 500);
+    }
+  },
 });
 
 // 포지션 정보
-const positions = ref([
-  { value: 'top', label: '탑', img: top },
-  { value: 'jungle', label: '정글', img: jungle },
-  { value: 'mid', label: '미드', img: mid },
-  { value: 'adc', label: '원딜', img: adc },
-  { value: 'sup', label: '서폿', img: sup },
-]);
+const positions = reactive({
+  top: {
+    value: 'top',
+    label: '탑',
+    img: top,
+  },
+  jungle: {
+    value: 'jungle',
+    label: '정글',
+    img: jungle,
+  },
+  mid: {
+    value: 'mid',
+    label: '미드',
+    img: mid,
+  },
+  adc: {
+    value: 'adc',
+    label: '원딜',
+    img: adc,
+  },
+  sup: {
+    value: 'sup',
+    label: '서폿',
+    img: sup,
+  },
+});
 
-// 각 포지션에 대해 점수를 저장하는 배열
-const selectedPoints = ref(Array(positions.value.length).fill(1));
+// 각 포지션에 대해 점수를 저장
+const selectedPoints = reactive({
+  top: 1,
+  jungle: 1,
+  mid: 1,
+  adc: 1,
+  sup: 1,
+});
 
 // 점수 옵션
-const points = ref([
-  { value: 1, label: 1 },
-  { value: 2, label: 2 },
-  { value: 3, label: 3 },
-  { value: 4, label: 4 },
-  { value: 5, label: 5 },
-]);
+const points = [1, 2, 3, 4, 5];
 
-// 주 포지션과 부 포지션 체크 상태를 저장하는 배열
-const selectedMain = ref(Array(positions.value.length).fill(false));
-const selectedSub = ref(Array(positions.value.length).fill(false));
+// 주 포지션과 부 포지션 체크 상태를 저장
+const selectedMain = ref<Position | false>(false);
+const selectedSub = ref<Position | false>(false);
 
-// 주 포지션과 부 포지션을 선택한 개수를 계산
-const mainCount = computed(() => selectedMain.value.filter(Boolean).length);
-const subCount = computed(() => selectedSub.value.filter(Boolean).length);
-
-// 체크박스 비활성화 로직
-const disableCheckbox = (index: number, type: 'main' | 'sub') => {
-  if (type === 'main' && selectedMain.value[index]) return false;
-  if (type === 'sub' && selectedSub.value[index]) return false;
-
-  if (type === 'main') return mainCount.value >= 1;
-  if (type === 'sub') return subCount.value >= 1;
-
-  return false;
-};
-
-// 주 포지션 선택 시 처리 로직
-const handleMainChange = (index: number) => {
-  if (mainCount.value > 1) {
-    selectedMain.value[index] = false;
+// 주 포지션과 부 포지션을 같이 선택할 수 없도록 설정
+watch(selectedMain, (newValue) => {
+  errorMessage.position.isVisible = false;
+  if (newValue && newValue === selectedSub.value) {
+    selectedSub.value = false;
   }
-};
+});
 
-// 부 포지션 선택 시 처리 로직
-const handleSubChange = (index: number) => {
-  if (subCount.value > 1) {
-    selectedSub.value[index] = false;
+watch(selectedSub, (newValue) => {
+  if (newValue && newValue === selectedMain.value) {
+    selectedMain.value = false;
   }
-};
+});
 
-const handleSubmit = () => {
-  let valid = true;
-  errorMessage.value = { name: '', nickname: '', email: '', password: '', position: '' };
-  // 유효성 검사
-  if (!userInfo.name) {
-    errorMessage.value.name = '이름을 입력해주세요.';
-    valid = false;
-  }
+const handleSubmit = async () => {
+  let isValid = false;
+  for (const key in userInfo) {
+    const keyName = key as UserInfoKey;
 
-  if (!userInfo.nickname) {
-    errorMessage.value.nickname = '롤 닉네임을 입력해주세요.';
-    valid = false;
-  }
-
-  if (!userInfo.email) {
-    errorMessage.value.email = '이메일을 입력해주세요.';
-    valid = false;
-  }
-
-  if (!userInfo.password) {
-    errorMessage.value.password = '비밀번호를 입력해주세요.';
-    valid = false;
-  }
-
-  if (mainCount.value === 0 || subCount.value === 0) {
-    errorMessage.value.position = '주 포지션과 부 포지션을 각각 하나씩 선택해주세요.';
-    valid = false;
-  }
-
-  if (!valid) return;
-
-  // 유효성 검사 통과 시 데이터 제출
-  const formData = {
-    name: userInfo.name,
-    nickname: userInfo.nickname,
-    email: userInfo.email,
-    password: userInfo.password,
-    positions: positions.value.map((position, index) => ({
-      position: position.value,
-      points: selectedPoints.value[index],
-      isMain: selectedMain.value[index],
-      isSub: selectedSub.value[index],
-    })),
-  };
-
-  console.log('제출된 데이터:', formData);
-};
-
-// 실시간 에러 초기화 (watch 사용)
-watch(
-  () => userInfo.name,
-  () => {
-    errorMessage.value.name = userInfo.name ? '' : '이름을 입력해주세요.';
-  }
-);
-
-watch(
-  () => userInfo.nickname,
-  () => {
-    errorMessage.value.nickname = userInfo.nickname ? ' ' : '롤 닉네임을 입력해주세요.';
-  }
-);
-
-watch(
-  () => userInfo.email,
-  () => {
-    errorMessage.value.email = userInfo.email ? '' : '이메일을 입력해주세요.';
-  }
-);
-
-watch(
-  () => userInfo.password,
-  () => {
-    errorMessage.value.password = userInfo.password ? '' : '비밀번호를 입력해주세요.';
-  }
-);
-
-// 포지션 변경 시 에러 메시지 초기화
-watch(
-  [selectedMain, selectedSub],
-  () => {
-    if (mainCount.value > 0 || subCount.value > 0) {
-      errorMessage.value.position = '';
-    } else {
-      errorMessage.value.position = '주 포지션과 부 포지션을 각각 하나씩 선택해주세요.';
+    if (!userInfo[keyName]) {
+      errorMessage[keyName].isVisible = true;
+      isValid = true;
     }
-  },
-  { deep: true }
-);
+  }
+
+  if (userInfo.passwordCheck !== userInfo.password) {
+    errorMessage.passwordCheck.isVisible = true;
+    isValid = true;
+  }
+
+  if (!selectedMain.value) {
+    errorMessage.position.isVisible = true;
+    isValid = true;
+  }
+
+  if (isValid) {
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: userInfo.email,
+      password: userInfo.password,
+      options: {
+        data: {
+          name: userInfo.name,
+          nickname: userInfo.nickname,
+          positionScore: selectedPoints,
+          mainPosition: selectedMain.value,
+          subPosition: selectedSub.value || null,
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 </script>
 
 <style scoped lang="scss">
 $opa: 0.6;
-$color: #5282e6;
 
 .signup__container {
   box-sizing: border-box;
@@ -304,12 +372,12 @@ $color: #5282e6;
 
     input {
       width: 500px;
-      padding: 15px 0;
+      padding: 10px 5px;
       margin-bottom: 20px;
       border-bottom: 1px solid rgb(0 0 0 / 10%);
 
       &:hover {
-        background-color: rgba($color, 0.1);
+        background-color: rgba($color-primary, 0.1);
       }
 
       &:focus {
@@ -367,12 +435,12 @@ $color: #5282e6;
       padding: 20px 15px;
       font-size: 17px;
       color: white;
-      background-color: $color;
+      background-color: $color-primary;
       border-radius: 12px;
       transition: all 0.5s ease-in-out;
 
       &:hover {
-        color: $color;
+        color: $color-primary;
         background-color: rgb(0 0 0 / 10%);
       }
     }
