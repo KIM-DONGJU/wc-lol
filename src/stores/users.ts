@@ -57,13 +57,18 @@ export const useUsersStore = defineStore(
       }
     };
 
+    const updateGroupMember = (member: GroupMember) => {
+      const index = groupMembers.value.findIndex((groupMember) => groupMember.id === member.id);
+      groupMembers.value[index] = member;
+    };
+
     const currentMemberInGroup = computed(() => {
       return groupMembers.value.find((groupMember) => {
         return groupMember.userId === authStore.user?.id;
       });
     });
 
-    return { getGroupMembers, groupMembers, currentMemberInGroup };
+    return { getGroupMembers, groupMembers, currentMemberInGroup, updateGroupMember };
   },
   {
     persist: [

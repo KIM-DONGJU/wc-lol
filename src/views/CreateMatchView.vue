@@ -89,12 +89,12 @@
                   :key="position"
                   class="flex-1-1"
                 >
-                  {{ LINE[position] }}: {{ score }}점
+                  {{ POSITION_KR[position] }}: {{ score }}점
                 </p>
               </div>
               <v-tooltip activator="parent" location="top">
                 <p v-for="(score, key) in selectedMembers.positionScore" :key="key">
-                  {{ LINE[key] }}: {{ score }}점
+                  {{ POSITION_KR[key] }}: {{ score }}점
                 </p>
               </v-tooltip>
             </div>
@@ -130,7 +130,7 @@
                       v-for="(score, key) in teamList[0][position.value]?.positionScore"
                       :key="key"
                     >
-                      {{ LINE[key] }}: {{ score }}점
+                      {{ POSITION_KR[key] }}: {{ score }}점
                     </p>
                   </v-tooltip>
                 </div>
@@ -158,7 +158,7 @@
                       v-for="(score, key) in teamList[1][position.value]?.positionScore"
                       :key="key"
                     >
-                      {{ LINE[key] }}: {{ score }}점
+                      {{ POSITION_KR[key] }}: {{ score }}점
                     </p>
                   </v-tooltip>
                 </div>
@@ -183,7 +183,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { LINE } from '@/constants/tier';
+import { POSITION_KR } from '@/constants/position';
 import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
 
 import styles from '@/styles/_export.module.scss';

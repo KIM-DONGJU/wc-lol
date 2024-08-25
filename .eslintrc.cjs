@@ -26,6 +26,14 @@ module.exports = {
         math: 'always', // 수학 표현식에 대해서는 항상 셀프 클로징 허용
       },
     ],
+    'vue/max-attributes-per-line': [
+      'error',
+      {
+        singleline: {
+          max: 6,
+        },
+      },
+    ],
     'vue/attributes-order': [
       'error',
       {

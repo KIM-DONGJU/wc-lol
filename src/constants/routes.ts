@@ -23,9 +23,9 @@ export const SIGN_UP = {
   name: 'signUp',
 };
 
-export const USER_LIST = {
-  path: '/user-list',
-  name: 'userList',
+export const MEMBER_LIST = {
+  path: '/member-list',
+  name: 'memberList',
 };
 
 export const USER_DETAIL = {

@@ -1,4 +1,12 @@
-import { CREATE_MATCH, LOGIN, NOT_FOUND, SIGN_UP, USER_LIST, USER_TIER } from '@/constants/routes';
+import {
+  CREATE_MATCH,
+  LOGIN,
+  MEMBER_LIST,
+  NOT_FOUND,
+  SIGN_UP,
+  USER_DETAIL,
+  USER_TIER,
+} from '@/constants/routes';
 import { useAuthStore } from '@/stores/auth';
 import { useUsersStore } from '@/stores/users';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -39,17 +47,24 @@ const router = createRouter({
       },
     },
     {
-      path: USER_LIST.path,
-      name: USER_LIST.name,
-      component: () => import('@/views/UserListView.vue'),
+      path: MEMBER_LIST.path,
+      name: MEMBER_LIST.name,
+      component: () => import('@/views/MemberList.vue'),
+    },
+    {
+      path: USER_DETAIL.path,
+      name: USER_DETAIL.name,
+      component: () => import('@/views/UserDetailView.vue'),
       beforeEnter: (to, from, next) => {
         const usersStore = useUsersStore();
 
-        if (usersStore.currentMemberInGroup?.role === 'admin') {
+        const member = usersStore.groupMembers.find((user) => user.id === Number(to.params.id));
+        if (usersStore.currentMemberInGroup?.role === 'admin' && member) {
           next();
-        } else {
-          next({ name: 'userTier', params: { position: 'all' } });
+          return;
         }
+
+        next({ name: MEMBER_LIST.name });
       },
     },
   ],

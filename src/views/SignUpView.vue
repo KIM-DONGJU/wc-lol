@@ -57,47 +57,14 @@
           {{ errorMessage.passwordCheck.message }}
         </p>
       </div>
-
-      <div v-for="(position, key) in positions" :key="key" class="position">
-        <div class="position__img">
-          <span class="position__name">{{ position.label }}</span>
-          <img :src="position.img" />
-        </div>
-
-        <div class="position__select w-100">
-          <!-- 점수 선택 -->
-          <div class="position__points">
-            <VSelect
-              v-model="selectedPoints[key]"
-              :items="points"
-              label="점수"
-              variant="outlined"
-              width="100%"
-              hide-details
-            />
-          </div>
-          <!-- 주 포지션 / 부 포지션 체크박스 -->
-          <div class="position__checkbox">
-            <VCheckbox
-              v-model="selectedMain"
-              :value="key"
-              :color="styles.primary"
-              label="주 포지션"
-              hide-details
-              density="compact"
-            />
-            <VCheckbox
-              v-model="selectedSub"
-              :value="key"
-              :color="styles.primary"
-              class="ml-3"
-              label="부 포지션"
-              hide-details
-              density="compact"
-            />
-          </div>
-        </div>
-      </div>
+      <SetPosition
+        v-for="position in POSITION_LIST"
+        :key="position"
+        v-model:score="selectedPoints[position]"
+        v-model:mainPosition="selectedMain"
+        v-model:subPosition="selectedSub"
+        :position="position"
+      />
       <div>
         <p v-if="errorMessage.position.isVisible" class="error__message">
           {{ errorMessage.position.message }}
@@ -116,18 +83,15 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive } from 'vue';
 
 import { supabase } from '@/supabase';
-import type { Position } from '@/stores/users';
+import usePosition from '@/composables/usePosition';
 
+import SetPosition from '@/components/SetPosition.vue';
+
+import { POSITION_LIST } from '@/constants/position';
 import styles from '@/styles/_export.module.scss';
-
-import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
-import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
-import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
-import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
-import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
 
 const router = useRouter();
 const goBack = () => {
@@ -234,64 +198,7 @@ const bindUserPasswordCheck = computed({
   },
 });
 
-// 포지션 정보
-const positions = reactive({
-  top: {
-    value: 'top',
-    label: '탑',
-    img: top,
-  },
-  jungle: {
-    value: 'jungle',
-    label: '정글',
-    img: jungle,
-  },
-  mid: {
-    value: 'mid',
-    label: '미드',
-    img: mid,
-  },
-  adc: {
-    value: 'adc',
-    label: '원딜',
-    img: adc,
-  },
-  sup: {
-    value: 'sup',
-    label: '서폿',
-    img: sup,
-  },
-});
-
-// 각 포지션에 대해 점수를 저장
-const selectedPoints = reactive({
-  top: 1,
-  jungle: 1,
-  mid: 1,
-  adc: 1,
-  sup: 1,
-});
-
-// 점수 옵션
-const points = [1, 2, 3, 4, 5];
-
-// 주 포지션과 부 포지션 체크 상태를 저장
-const selectedMain = ref<Position | false>(false);
-const selectedSub = ref<Position | false>(false);
-
-// 주 포지션과 부 포지션을 같이 선택할 수 없도록 설정
-watch(selectedMain, (newValue) => {
-  errorMessage.position.isVisible = false;
-  if (newValue && newValue === selectedSub.value) {
-    selectedSub.value = false;
-  }
-});
-
-watch(selectedSub, (newValue) => {
-  if (newValue && newValue === selectedMain.value) {
-    selectedMain.value = false;
-  }
-});
+const { selectedPoints, selectedMain, selectedSub } = usePosition();
 
 const handleSubmit = async () => {
   let isValid = false;
@@ -384,47 +291,6 @@ $opa: 0.6;
 
       &:focus {
         outline: none;
-      }
-    }
-  }
-
-  .position {
-    display: flex;
-    padding-bottom: 10px;
-    margin: 20px 0;
-    border-bottom: 1px solid rgb(0 0 0 / 10%);
-
-    .position__img {
-      display: flex;
-      flex-direction: column;
-
-      span {
-        text-align: center;
-      }
-
-      img {
-        width: 80px;
-        height: 80px;
-      }
-    }
-
-    .position__select {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      margin-left: 15px;
-
-      .position__checkbox {
-        display: flex;
-
-        label {
-          margin: 0;
-          margin-left: 3px;
-        }
-
-        #main__position {
-          margin-right: 20px;
-        }
       }
     }
   }

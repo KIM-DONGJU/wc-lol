@@ -1,6 +1,6 @@
 <template>
-  <div class="user-list-root">
-    <div class="wrap-user-list">
+  <div class="member-list-root">
+    <div class="wrap-member-list">
       <v-text-field
         v-model="searchInput"
         :base-color="styles.primary"
@@ -24,27 +24,25 @@
         <p>원딜</p>
         <p>서폿</p>
       </header>
-      <div v-for="(userTier, index) in groupMembers" :key="index" class="tier-table">
+      <div
+        v-for="(groupMember, index) in groupMembers"
+        :key="index"
+        :class="isAdmin && 'cursor-pointer'"
+        class="tier-table"
+        @click="goMemberDetail(groupMember)"
+      >
         <p>
-          {{ userTier.name }}
+          {{ groupMember.name }}
         </p>
         <p>
-          {{ userTier.nickname }}
+          {{ groupMember.nickname }}
         </p>
-        <p>
-          {{ userTier.positionScore.top }}
-        </p>
-        <p>
-          {{ userTier.positionScore.jungle }}
-        </p>
-        <p>
-          {{ userTier.positionScore.mid }}
-        </p>
-        <p>
-          {{ userTier.positionScore.adc }}
-        </p>
-        <p>
-          {{ userTier.positionScore.sup }}
+        <p
+          v-for="position in POSITION_LIST"
+          :key="position"
+          :class="getHighlightPosition(groupMember, position)"
+        >
+          {{ groupMember.positionScore[position] }}
         </p>
       </div>
     </div>
@@ -53,10 +51,15 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { useUsersStore } from '@/stores/users';
+import { type GroupMember, useUsersStore } from '@/stores/users';
+
+import { POSITION_LIST } from '@/constants/position';
 import styles from '@/styles/_export.module.scss';
+import { USER_DETAIL } from '@/constants/routes';
 
+const router = useRouter();
 const usersStore = useUsersStore();
 
 const searchInput = ref('');
@@ -71,15 +74,40 @@ const groupMembers = computed(() => {
     return user.name.includes(trimSearchInput) || user.nickname.includes(trimSearchInput);
   });
 });
+
+const getHighlightPosition = (groupMember: GroupMember, position: string) => {
+  if (position === groupMember.mainPosition) {
+    return 'main-position';
+  }
+
+  if (position === groupMember.subPosition) {
+    return 'sub-position';
+  }
+};
+
+const goMemberDetail = (member: GroupMember) => {
+  if (!isAdmin.value) {
+    return;
+  }
+
+  router.push({
+    name: USER_DETAIL.name,
+    params: {
+      id: member.id.toString(),
+    },
+  });
+};
+
+const isAdmin = computed(() => usersStore.currentMemberInGroup?.role === 'admin');
 </script>
 <style lang="scss" scoped>
-.user-list-root {
+.member-list-root {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 10px 20px;
 
-  .wrap-user-list {
+  .wrap-member-list {
     width: 100%;
     max-width: 600px;
   }
@@ -126,6 +154,15 @@ const groupMembers = computed(() => {
         align-items: center;
         justify-content: center;
         font-size: 14px;
+      }
+
+      .main-position {
+        font-weight: bold;
+        color: $color-primary;
+      }
+
+      .sub-position {
+        font-weight: bold;
       }
     }
   }
