@@ -2,7 +2,7 @@
   <div class="create-match-root">
     <v-card class="wrap-search-user-list" width="100%">
       <v-data-iterator
-        :items="parsingGroupMembmers"
+        :items="parsingGroupMembers"
         :items-per-page="30"
         :search="search"
         width="100%"
@@ -11,17 +11,17 @@
           <p>금일 내전 참가자 검색 및 등록</p>
           <v-text-field
             v-model="search"
-            base-color="#5382e8"
+            :base-color="styles.primary"
+            :color="styles.primary"
             class="mt-3"
-            clearable
-            color="#5382e8"
+            style="max-width: 300px"
+            width="100%"
+            variant="outlined"
             density="compact"
-            hide-details
             placeholder="이름, 닉네임 검색"
             prepend-inner-icon="mdi-magnify"
-            style="max-width: 300px"
-            variant="outlined"
-            width="100%"
+            hide-details
+            clearable
           />
         </template>
         <template #default="{ items }">
@@ -89,12 +89,12 @@
                   :key="position"
                   class="flex-1-1"
                 >
-                  {{ LINE[position] }}: {{ score }}점
+                  {{ POSITION_KR[position] }}: {{ score }}점
                 </p>
               </div>
               <v-tooltip activator="parent" location="top">
                 <p v-for="(score, key) in selectedMembers.positionScore" :key="key">
-                  {{ LINE[key] }}: {{ score }}점
+                  {{ POSITION_KR[key] }}: {{ score }}점
                 </p>
               </v-tooltip>
             </div>
@@ -130,7 +130,7 @@
                       v-for="(score, key) in teamList[0][position.value]?.positionScore"
                       :key="key"
                     >
-                      {{ LINE[key] }}: {{ score }}점
+                      {{ POSITION_KR[key] }}: {{ score }}점
                     </p>
                   </v-tooltip>
                 </div>
@@ -158,7 +158,7 @@
                       v-for="(score, key) in teamList[1][position.value]?.positionScore"
                       :key="key"
                     >
-                      {{ LINE[key] }}: {{ score }}점
+                      {{ POSITION_KR[key] }}: {{ score }}점
                     </p>
                   </v-tooltip>
                 </div>
@@ -181,9 +181,12 @@
 </template>
 
 <script setup lang="ts">
-import { LINE } from '@/constants/tier';
-import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
 import { computed, ref } from 'vue';
+
+import { POSITION_KR } from '@/constants/position';
+import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
+
+import styles from '@/styles/_export.module.scss';
 
 const usersStore = useUsersStore();
 
@@ -212,7 +215,7 @@ const positionList = [
 
 const search = ref('');
 
-const parsingGroupMembmers = computed(() => {
+const parsingGroupMembers = computed(() => {
   return usersStore.groupMembers;
 });
 

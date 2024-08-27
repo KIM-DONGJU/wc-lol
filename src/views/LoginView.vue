@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { supabase } from '@/supabase';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const bindId = ref('');
 const bindPassword = ref('');
@@ -45,6 +45,7 @@ const signInGoogle = async () => {
         accessType: 'offline',
         prompt: 'consent',
       },
+      redirectTo: import.meta.env.DEV ? 'http://localhost:5173' : undefined,
     },
   });
 };
