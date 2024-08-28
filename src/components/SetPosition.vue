@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { Position } from '@/stores/users';
+import type { Position } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
 

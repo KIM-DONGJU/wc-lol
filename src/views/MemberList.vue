@@ -53,7 +53,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { type GroupMember, useUsersStore } from '@/stores/users';
+import { type GroupMember, useUsersStore } from '@/stores/useUsers';
 
 import { POSITION_LIST } from '@/constants/position';
 import styles from '@/styles/_export.module.scss';

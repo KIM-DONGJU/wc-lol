@@ -1,4 +1,4 @@
-import type { Position } from '@/stores/users';
+import type { Position } from '@/stores/useUsers';
 
 export const POSITION_LIST: Position[] = ['top', 'jungle', 'mid', 'adc', 'sup'];
 

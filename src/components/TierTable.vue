@@ -59,7 +59,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { USER_TIER } from '@/constants/routes';
-import { type Position, useUsersStore } from '@/stores/users';
+import { type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
 

@@ -39,11 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import usePosition from '@/composables/usePosition';
-import { type GroupMember, useUsersStore } from '@/stores/users';
+import { type GroupMember, useUsersStore } from '@/stores/useUsers';
+import { useCommonStore } from '@/stores/useCommon';
 
 import SetPosition from '@/components/SetPosition.vue';
 
@@ -52,6 +53,7 @@ import styles from '@/styles/_export.module.scss';
 import { supabase } from '@/supabase';
 
 const usersStore = useUsersStore();
+const commonStore = useCommonStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -100,15 +102,33 @@ const goBack = () => {
 };
 
 const onUpdatePositionScore = async () => {
+  if (!selectedMain.value) {
+    commonStore.showToast({
+      message: '주 포지션을 선택해주세요.',
+      color: 'error',
+      timeout: 3000,
+    });
+    return;
+  }
+
   try {
     const { data, error } = await supabase
       .from('groupmembers')
-      .update({ positionScore: selectedPoints })
+      .update({
+        positionScore: selectedPoints,
+        mainPosition: selectedMain.value,
+        subPosition: selectedSub.value || null,
+      })
       .eq('id', member.value?.id)
       .select<'', GroupMember>();
 
     if (data && data[0]) {
       usersStore.updateGroupMember(data[0]);
+      commonStore.showToast({
+        message: `${member.value?.name}(${member.value?.nickname})님의 정보가 수정되었습니다.`,
+        color: 'success',
+        timeout: 5000,
+      });
       goBack();
     }
   } catch (err) {

@@ -184,7 +184,7 @@
 import { computed, ref } from 'vue';
 
 import { POSITION_KR } from '@/constants/position';
-import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
+import { type GroupMember, type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
 
