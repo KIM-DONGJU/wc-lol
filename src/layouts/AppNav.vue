@@ -38,6 +38,7 @@ import {
   NOT_FOUND,
   SIGN_UP,
   USER_TIER,
+  CHAMPIONS,
 } from '@/constants/routes';
 
 const route = useRoute();
@@ -63,6 +64,11 @@ const routes = [
     path: CREATE_MATCH.path,
     label: '대전 생성',
     name: CREATE_MATCH.name,
+  },
+  {
+    path: CHAMPIONS.path,
+    label: '롤 챔피언',
+    name: CHAMPIONS.name,
   },
 ];
 
