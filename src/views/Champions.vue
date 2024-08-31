@@ -46,10 +46,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { supabase } from '@/supabase';
 
 import axios from 'axios';
 import styles from '@/styles/_export.module.scss';
-import { supabase } from '@/supabase';
 
 import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
 import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
@@ -89,7 +89,7 @@ const championsData = async () => {
       ({ data: championsData } = await supabase.from('LOL_champions').select('*'));
     } else {
       await updateChampionsImage(championsData);
-      championsData = await fetchChampions(); // Fetch champions after updating image URLs
+      championsData = await getChampionsData(); // Fetch champions after updating image URLs
     }
 
     championsData.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
@@ -197,8 +197,8 @@ const getMaxKey = async () => {
   return maxKeyData && maxKeyData.length > 0 ? maxKeyData[0].key : 0;
 };
 
-// 챔피언 데이터를 가져오는 함수
-const fetchChampions = async () => {
+// 수파베이스에서 챔피언 데이터를 가져오는 함수
+const getChampionsData = async () => {
   const { data: championsData } = await supabase.from('LOL_champions').select('*');
   return championsData;
 };
