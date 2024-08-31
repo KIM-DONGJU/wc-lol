@@ -260,6 +260,15 @@ const onMatchGroupVictoryConfirm = async () => {
     return;
   }
 
+  if (authStore.user?.id !== selectedMatchGroup.value?.creator_id) {
+    commonStore.showToast({
+      message: '대전 그룹을 만든 사람만 승자 팀을 확정할 수 있습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
   const isEveryMatchWinningTeamSelected = matches.value.every(
     (match) => match.wining_team_number !== null
   );
