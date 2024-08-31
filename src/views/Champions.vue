@@ -205,7 +205,7 @@ const getChampionsData = async () => {
 
 onMounted(() => {
   championsData();
-  championsKoreanName(); // 추가: 한국어 이름으로 업데이트
+  championsKoreanName();
 });
 </script>
 
@@ -245,7 +245,7 @@ onMounted(() => {
       }
 
       .header__img {
-        width: 24px; /* 이미지 크기 조정 */
+        width: 24px;
         height: 24px;
       }
     }
@@ -253,7 +253,7 @@ onMounted(() => {
 
   .champion__champions {
     display: grid;
-    grid-template-columns: repeat(8, 1fr); /* 일정한 그리드 레이아웃 */
+    grid-template-columns: repeat(8, 1fr);
     gap: 10px 20px;
     margin-top: 20px;
 
