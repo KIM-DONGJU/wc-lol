@@ -104,7 +104,7 @@ const goBack = () => {
 const onUpdatePositionScore = async () => {
   if (!selectedMain.value) {
     commonStore.showToast({
-      message: '주 포지션을 선택해주세요.',
+      message: '주 포지션을 선택해 주세요.',
       color: 'error',
       timeout: 3000,
     });

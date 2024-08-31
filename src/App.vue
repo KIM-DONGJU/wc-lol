@@ -8,6 +8,7 @@
     :timeout="toastMessage.timeout"
     :is-footer="toastMessage.isFooter"
   />
+  <CommonLoadingSpinner v-model="commonStore.loadingSpinner" />
 </template>
 
 <script setup lang="ts">
@@ -19,6 +20,7 @@ import { useCommonStore } from '@/stores/useCommon';
 
 import CommonToastMessage from '@/components/CommonToastMessage.vue';
 import AppNav from '@/layouts/AppNav.vue';
+import CommonLoadingSpinner from './components/CommonLoadingSpinner.vue';
 
 const usersStore = useUsersStore();
 const authStore = useAuthStore();

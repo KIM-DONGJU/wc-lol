@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 
 interface ShowToastMessageParams {
   message: string;
@@ -30,8 +30,15 @@ export const useCommonStore = defineStore('common', () => {
     toastMessage.isFooter = isFooter;
   };
 
+  const loadingSpinner = ref(false);
+  const setLoadingSpinner = (loading: boolean) => {
+    loadingSpinner.value = loading;
+  };
+
   return {
     toastMessage,
     showToast,
+    loadingSpinner,
+    setLoadingSpinner,
   };
 });
