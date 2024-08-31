@@ -1,8 +1,8 @@
 <template>
   <VBottomSheet
-    v-model="bindCreateMatchBottomSheet"
+    v-model="bindUpdateMatchBottomSheet"
     fullscreen
-    class="create-match-bottom-sheet-root"
+    class="update-match-bottom-sheet-root"
   >
     <div class="wrap-bottom-sheet-info">
       <div class="wrap-search-user-list">
@@ -19,13 +19,12 @@
               </p>
               <div class="d-flex align-center">
                 <VBtn
-                  v-if="previousMatchRecord"
+                  :color="styles.error"
                   size="x-large"
-                  variant="outlined"
                   class="mr-3"
-                  @click="loadPreviousMatchRecord"
+                  @click="openDeleteMatchConfirmModal"
                 >
-                  이전 대전 기록 불러오기
+                  삭제
                 </VBtn>
                 <VBtn variant="tonal" width="100px" size="x-large" @click="closeBottomSheet">
                   닫기
@@ -190,8 +189,8 @@
                 </tr>
               </table>
               <div class="wrap-buttons d-flex justify-end mt-6">
-                <VBtn :color="styles.primary" size="x-large" variant="tonal" @click="createMatch">
-                  대전 생성
+                <VBtn :color="styles.primary" size="x-large" variant="tonal" @click="updateMatch">
+                  대전 수정
                 </VBtn>
               </div>
             </div>
@@ -199,6 +198,12 @@
         </div>
       </div>
     </div>
+    <DeleteMatchConfirmModal
+      v-model:dialog="isVisibleDeleteMatchConfirmModal"
+      :match-index="matchIndex"
+      :match-group-name="matchGroup?.group_name"
+      @confirm="deleteMatch"
+    />
   </VBottomSheet>
 </template>
 
@@ -206,16 +211,18 @@
 import { computed, ref } from 'vue';
 
 import { type GroupMember, type Position, useUsersStore } from '@/stores/useUsers';
-import { type MatchGroup, useMatchStore } from '@/stores/useMatch';
+import { type Match, type MatchGroup, useMatchStore } from '@/stores/useMatch';
 import { useCommonStore } from '@/stores/useCommon';
-import { useAuthStore } from '@/stores/useAuth';
 import { POSITION_KR } from '@/constants/position';
 
 import styles from '@/styles/_export.module.scss';
+import DeleteMatchConfirmModal from './DeleteMatchConfirmModal.vue';
 
 const props = defineProps<{
   modelValue: boolean;
   matchGroup?: MatchGroup;
+  match: null | Match;
+  matchIndex: number;
 }>();
 
 const emit = defineEmits(['update:modelValue']);
@@ -223,15 +230,14 @@ const emit = defineEmits(['update:modelValue']);
 const usersStore = useUsersStore();
 const matchStore = useMatchStore();
 const commonStore = useCommonStore();
-const authStore = useAuthStore();
 
-const bindCreateMatchBottomSheet = computed({
+const bindUpdateMatchBottomSheet = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 });
 
 const closeBottomSheet = () => {
-  bindCreateMatchBottomSheet.value = false;
+  bindUpdateMatchBottomSheet.value = false;
 };
 
 const search = ref('');
@@ -359,21 +365,8 @@ const sumPoints = computed(() => {
   return [firstTeamPoints, secondPoints];
 });
 
-const createMatch = async () => {
-  if (!authStore.user?.id) {
-    commonStore.showToast({
-      message: '로그인이 필요합니다.',
-      color: 'error',
-    });
-
-    return;
-  }
-
-  if (!props.matchGroup?.id) {
-    commonStore.showToast({
-      message: '대전 그룹을 선택해 주세요.',
-      color: 'error',
-    });
+const updateMatch = async () => {
+  if (!props.match) {
     return;
   }
 
@@ -387,15 +380,15 @@ const createMatch = async () => {
 
   try {
     commonStore.setLoadingSpinner(true);
-    const data = await matchStore.createMatch({
-      groupId: props.matchGroup?.id,
-      teams: teamList.value as Record<Position, GroupMember>[],
+    const data = await matchStore.updateMatchTeam({
+      matchId: props.match.id,
+      teams: teamList.value,
     });
 
     if (data && data.length > 0) {
-      matchStore.unshiftMatch(data[0]);
+      matchStore.setMatch(data[0]);
       commonStore.showToast({
-        message: '대전이 생성되었습니다.',
+        message: '대전이 수정되었습니다.',
         color: 'success',
       });
     }
@@ -408,27 +401,51 @@ const createMatch = async () => {
   }
 };
 
-const previousMatchRecord = computed(() => {
-  // 가장 마지막 값을 가져오기 위해 reverse 사용, 원본 배열으로 변경되지 않도록 slice 사용
-  return matchStore.matches
-    .slice()
-    .reverse()
-    .find((match) => match.group_id === props.matchGroup?.id);
-});
-
 const loadPreviousMatchRecord = () => {
-  if (!previousMatchRecord.value) {
+  if (!props.match) {
+    closeBottomSheet();
     return;
   }
 
-  selectedGroupMembers.value = previousMatchRecord.value.teams.flatMap((team) =>
+  selectedGroupMembers.value = props.match.teams.flatMap((team) =>
     Object.values(team).filter((user) => user)
   );
-  teamList.value = previousMatchRecord.value.teams;
+  teamList.value = props.match.teams;
+};
+
+loadPreviousMatchRecord();
+
+const isVisibleDeleteMatchConfirmModal = ref(false);
+const openDeleteMatchConfirmModal = () => {
+  isVisibleDeleteMatchConfirmModal.value = true;
+};
+const deleteMatch = async () => {
+  if (!props.match) {
+    return;
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+    const data = await matchStore.deleteMatch(props.match.id);
+    commonStore.showToast({
+      message: '대전이 삭제되었습니다.',
+      color: 'success',
+    });
+
+    if (data && data.length > 0) {
+      matchStore.removeMatchByMatchId(data[0].id);
+      isVisibleDeleteMatchConfirmModal.value = false;
+      closeBottomSheet();
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    commonStore.setLoadingSpinner(false);
+  }
 };
 </script>
 <style lang="scss" scoped>
-.create-match-bottom-sheet-root {
+.update-match-bottom-sheet-root {
   .wrap-bottom-sheet-info {
     height: 100%;
     padding: 20px;

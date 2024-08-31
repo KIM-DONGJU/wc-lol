@@ -1,0 +1,47 @@
+<template>
+  <CommonModal v-model:dialog="bindDialog" width="100%" max-width="350">
+    <p class="font-weight-bold text-h5">대전 그룹 승리 확인</p>
+    <div class="d-flex flex-column">
+      <p class="mt-4">
+        <span class="font-weight-bold">{{ matchGroup?.group_name }}</span> 대전 그룹의 승자를
+        확정하시겠습니까?
+      </p>
+      <p>
+        승자 확정 시 수정 및 삭제가 불가능하며,<br />
+        연승/연패에 따라 유저들의 포지션 점수가 변동됩니다.
+      </p>
+      <div class="mt-4 d-flex align-center">
+        <VBtn size="large" class="flex-1-1" variant="tonal" @click="cancel"> 취소 </VBtn>
+        <VBtn :color="styles.primary" size="large" class="flex-1-1 ml-2" @click="emit('confirm')">
+          확인
+        </VBtn>
+      </div>
+    </div>
+  </CommonModal>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+import type { MatchGroup } from '@/stores/useMatch';
+
+import CommonModal from './CommonModal.vue';
+
+import styles from '@/styles/_export.module.scss';
+
+const props = defineProps<{
+  dialog: boolean;
+  matchGroup?: MatchGroup;
+}>();
+
+const emit = defineEmits(['update:dialog', 'confirm']);
+
+const bindDialog = computed({
+  get: () => props.dialog,
+  set: (value: boolean) => emit('update:dialog', value),
+});
+
+const cancel = () => {
+  emit('update:dialog', false);
+};
+</script>

@@ -2,27 +2,49 @@
   <div class="create-match-root">
     <div v-show="winningTeamSelectIndex !== null" class="dim" @click="cancelSelectWiningTeam"></div>
     <div class="wrap-create-match-group d-flex justify-center align-center">
-      <div class="w-100 wrap-buttons d-flex justify-space-between align-center">
-        <VSelect
-          v-model="selectMatchGroupId"
-          :items="matchGroupsSelectLabel"
-          label="대전 그룹 선택"
-          width="100%"
-          max-width="250px"
-          variant="outlined"
-          no-data-text="대전 그룹이 없습니다."
-          placeholder="대전 그룹을 선택해 주세요."
-          hide-details
-        />
-        <VBtn
-          :color="styles.primary"
-          class="ml-3"
-          height="56px"
-          variant="tonal"
-          @click="insertMatchGroup"
-        >
-          대전 그룹 생성
-        </VBtn>
+      <div class="w-100 px-3 wrap-buttons d-flex justify-space-between align-center">
+        <div class="flex-1-1 d-flex align-center">
+          <VSelect
+            v-model="selectMatchGroupId"
+            :items="matchGroupsSelectLabel"
+            label="대전 그룹 선택"
+            width="100%"
+            max-width="250px"
+            variant="outlined"
+            no-data-text="대전 그룹이 없습니다."
+            placeholder="대전 그룹을 선택해 주세요."
+            hide-details
+          />
+          <VBtn
+            :color="styles.primary"
+            :base-color="styles.primary"
+            class="ml-3"
+            size="x-large"
+            height="56px"
+            variant="outlined"
+            @click="insertMatchGroup"
+          >
+            대전 그룹 생성
+          </VBtn>
+        </div>
+        <div v-if="!selectedMatchGroup?.is_fixed" class="d-flex align-center">
+          <VBtn
+            v-if="selectedMatchGroup && matches.length > 0"
+            :color="styles.primary"
+            variant="tonal"
+            @click="openMatchGroupVictoryConfirmModal"
+          >
+            승자 확정
+          </VBtn>
+          <VBtn
+            v-if="selectMatchGroupId"
+            :color="styles.error"
+            class="ml-3"
+            @click="openDeleteMatchGroupConfirmModal"
+          >
+            대전 그룹 삭제
+          </VBtn>
+        </div>
       </div>
     </div>
     <VDivider class="mt-6" />
@@ -40,7 +62,9 @@
         >
           <VImg src="@/assets/images/error/cancel.svg" width="100%" max-width="400px" />
           <p class="mt-10 w-100 d-flex flex-column justify-center align-center">
-            <span class="font-weight-bold text-h5 text-center">{{ selectedMatchGroupName }}</span>
+            <span class="font-weight-bold text-h5 text-center">{{
+              selectedMatchGroup.group_name
+            }}</span>
             <span class="mt-2 text-h6 text-center">대전 그룹에 생성된 대전이 없습니다. </span>
           </p>
         </div>
@@ -53,7 +77,7 @@
           >
             <div class="match-round pb-1 d-flex justify-space-between">
               <p class="text-h6 text-primary font-weight-bold">{{ matches.length - index }}경기</p>
-              <div class="d-flex">
+              <div v-if="!selectedMatchGroup?.is_fixed" class="d-flex">
                 <VBtn
                   v-if="winningTeamSelectIndex === null || winningTeamSelectIndex !== index"
                   :color="styles.primary"
@@ -66,6 +90,14 @@
                 </VBtn>
                 <VBtn v-else :color="styles.error" size="small" @click="cancelSelectWiningTeam">
                   취소
+                </VBtn>
+                <VBtn
+                  :disabled="winningTeamSelectIndex !== null"
+                  size="small"
+                  class="ml-2"
+                  @click="openUpdateMatchBottomSheet(match, index)"
+                >
+                  수정
                 </VBtn>
               </div>
             </div>
@@ -90,6 +122,7 @@
           </div>
         </div>
         <div
+          v-if="!selectedMatchGroup?.is_fixed"
           :class="winningTeamSelectIndex !== null && 'opacity-20'"
           class="mt-10 px-5 create-match w-100 d-flex justify-end"
         >
@@ -106,9 +139,26 @@
     </div>
     <CreateMatchGroupModal v-model:dialog="isVisibleCreateMatchGroupModal" />
     <CreateMatchBottomSheet
+      v-if="isVisibleCreateMatchBottomSheet"
       v-model="isVisibleCreateMatchBottomSheet"
-      :match-group-id="selectMatchGroupId"
-      :match-group-name="selectedMatchGroupName"
+      :match-group="selectedMatchGroup"
+    />
+    <UpdateMatchBottomSheet
+      v-if="isVisibleUpdateMatchBottomSheet"
+      v-model="isVisibleUpdateMatchBottomSheet"
+      :match="updatingMatch"
+      :match-group="selectedMatchGroup"
+      :match-index="updatingMatchIndex"
+    />
+    <DeleteMatchGroupConfirmModal
+      v-model:dialog="isVisibleDeleteMatchGroupConfirmModal"
+      :match-group="selectedMatchGroup"
+      @confirm="deleteMatchGroup"
+    />
+    <MatchGroupVictoryConfirmModal
+      v-model:dialog="isVisibleMatchGroupVictoryConfirmModal"
+      :match-group="selectedMatchGroup"
+      @confirm="onMatchGroupVictoryConfirm"
     />
   </div>
 </template>
@@ -118,12 +168,15 @@ import { computed, ref, watch } from 'vue';
 
 import { useAuthStore } from '@/stores/useAuth';
 import { useCommonStore } from '@/stores/useCommon';
-import { type Match, useMatchStore } from '@/stores/useMatch';
+import { type Match, type MatchGroup, useMatchStore } from '@/stores/useMatch';
 
 import CreateMatchGroupModal from '@/components/CreateMatchGroupModal.vue';
 
 import styles from '@/styles/_export.module.scss';
 import CreateMatchBottomSheet from '@/components/CreateMatchBottomSheet.vue';
+import UpdateMatchBottomSheet from '@/components/UpdateMatchBottomSheet.vue';
+import DeleteMatchGroupConfirmModal from '@/components/DeleteMatchGroupConfirmModal.vue';
+import MatchGroupVictoryConfirmModal from '@/components/MatchGroupVictoryConfirmModal.vue';
 
 const authStore = useAuthStore();
 const commonStore = useCommonStore();
@@ -174,8 +227,8 @@ const matchGroupsSelectLabel = computed(() => {
   });
 });
 
-const selectedMatchGroupName = computed(() => {
-  return matchStore.matchGroups?.find((item) => item.id === selectMatchGroupId.value)?.group_name;
+const selectedMatchGroup = computed(() => {
+  return matchStore.matchGroups?.find((item) => item.id === selectMatchGroupId.value) as MatchGroup;
 });
 
 const isVisibleCreateMatchBottomSheet = ref(false);
@@ -197,6 +250,129 @@ const openCreateMatchBottomSheet = () => {
 };
 
 const matches = computed(() => matchStore.matches);
+const isVisibleMatchGroupVictoryConfirmModal = ref(false);
+const openMatchGroupVictoryConfirmModal = () => {
+  isVisibleMatchGroupVictoryConfirmModal.value = true;
+};
+
+const onMatchGroupVictoryConfirm = async () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  const isEveryMatchWinningTeamSelected = matches.value.every(
+    (match) => match.wining_team_number !== null
+  );
+
+  if (!isEveryMatchWinningTeamSelected) {
+    commonStore.showToast({
+      message: '모든 경기의 승리팀을 선택해 주세요.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  let firstTeamWinCount = 0;
+  let secondTeamWinCount = 0;
+
+  matches.value.forEach((match) => {
+    if (match.wining_team_number === 0) {
+      firstTeamWinCount += 1;
+    } else {
+      secondTeamWinCount += 1;
+    }
+  });
+
+  let winnerGroupMemberIds: number[] = [];
+  let loserGroupMemberIds: number[] = [];
+
+  if (firstTeamWinCount !== secondTeamWinCount) {
+    const lastMatches = matches.value[matches.value.length - 1];
+
+    if (firstTeamWinCount > secondTeamWinCount) {
+      winnerGroupMemberIds = Object.values(lastMatches.teams[0]).map((member) => member.id);
+      loserGroupMemberIds = Object.values(lastMatches.teams[1]).map((member) => member.id);
+    } else {
+      winnerGroupMemberIds = Object.values(lastMatches.teams[1]).map((member) => member.id);
+      loserGroupMemberIds = Object.values(lastMatches.teams[0]).map((member) => member.id);
+    }
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+
+    const data = await matchStore.onFixedGroupMatch({
+      groupId: selectMatchGroupId.value,
+      winnerGroupMemberIds,
+      loserGroupMemberIds,
+    });
+
+    if (data && data.length > 0) {
+      commonStore.showToast({
+        message: '승자 팀이 확정되었습니다.',
+        color: 'success',
+      });
+
+      matchStore.setMatchGroup(data[0]);
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    isVisibleMatchGroupVictoryConfirmModal.value = false;
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
+const isVisibleDeleteMatchGroupConfirmModal = ref(false);
+const openDeleteMatchGroupConfirmModal = () => {
+  isVisibleDeleteMatchGroupConfirmModal.value = true;
+};
+const deleteMatchGroup = async () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  if (authStore.user?.id !== selectedMatchGroup.value?.creator_id) {
+    commonStore.showToast({
+      message: '대전 그룹을 만든 사람만 삭제할 수 있습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  if (selectedMatchGroup.value?.is_fixed) {
+    commonStore.showToast({
+      message: '대전 그룹이 확정되어 삭제할 수 없습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+    const data = await matchStore.deleteMatchGroup(selectMatchGroupId.value);
+
+    if (data && data.length > 0) {
+      commonStore.showToast({
+        message: '대전 그룹이 삭제되었습니다.',
+        color: 'success',
+      });
+
+      matchStore.removeMatchGroupByGroupId(data[0].id);
+      matchStore.setMatches([]);
+      selectMatchGroupId.value = null;
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    isVisibleDeleteMatchGroupConfirmModal.value = false;
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
 const getMatches = async () => {
   if (!selectMatchGroupId.value) {
     return;
@@ -233,6 +409,10 @@ const selectWinningTeam = async (match: Match, matchIndex: number, teamIndex: nu
     return;
   }
 
+  if (winningTeamSelectIndex.value !== matchIndex) {
+    return;
+  }
+
   if (match.wining_team_number === teamIndex) {
     commonStore.showToast({
       message: '기존 승리팀과 동일한 팀을 선택할 수 없습니다.',
@@ -245,12 +425,15 @@ const selectWinningTeam = async (match: Match, matchIndex: number, teamIndex: nu
 
   try {
     commonStore.setLoadingSpinner(true);
-    const data = await matchStore.selectWinningTeam(match.id, teamIndex);
+    const data = await matchStore.selectWinningTeam({
+      matchId: match.id,
+      winningTeamNumber: teamIndex,
+    });
     if (data && data.length > 0) {
       const message =
         match.wining_team_number === null ? '승리팀이 선택되었습니다.' : '승리팀이 변경되었습니다.';
 
-      matchStore.setMatchesByIndex(matchIndex, data[0]);
+      matchStore.setMatch(data[0]);
       commonStore.showToast({
         message,
         color: 'success',
@@ -290,6 +473,16 @@ const getSelectWinningTeamClass = (teamIndex: number) => {
     'opacity-20': winningTeamSelectIndex.value !== teamIndex,
     'back-team': winningTeamSelectIndex.value !== teamIndex,
   };
+};
+
+const isVisibleUpdateMatchBottomSheet = ref(false);
+const updatingMatch = ref<null | Match>(null);
+const updatingMatchIndex = ref(-1);
+
+const openUpdateMatchBottomSheet = (match: Match, index: number) => {
+  updatingMatch.value = match;
+  updatingMatchIndex.value = index;
+  isVisibleUpdateMatchBottomSheet.value = true;
 };
 </script>
 

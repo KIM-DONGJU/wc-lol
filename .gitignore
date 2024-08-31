@@ -36,4 +36,4 @@ coverage
 .env.production.local
 .env.local
 
-*.stylelintcache
+.stylelintcache

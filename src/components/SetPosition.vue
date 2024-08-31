@@ -64,7 +64,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:score', 'update:mainPosition', 'update:subPosition']);
 
-const scores = [1, 2, 3, 4, 5];
+const scores = Array.from({ length: 10 }, (_, index) => index + 1);
 const bindScore = computed({
   get: () => props.score,
   set: (value: number) => emit('update:score', value),

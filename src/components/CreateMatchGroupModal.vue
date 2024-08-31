@@ -5,7 +5,7 @@
     max-width="400"
     class="create-match-group-modal-root"
   >
-    <p class="text-h6 font-weight-bold d-flex justify-space-between align-center">
+    <p class="text-h5 font-weight-bold d-flex justify-space-between align-center">
       <span> 대전 그룹 생성 </span>
       <VIcon class="ml-2" icon="mdi-close" size="24" @click="closeDialog" />
     </p>
