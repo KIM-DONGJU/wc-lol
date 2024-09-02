@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: CHAMPIONS.path,
       name: CHAMPIONS.name,
-      component: () => import('@/views/Champions.vue'),
+      component: () => import('@/views/ChampionList.vue'),
     },
     {
       path: SIGN_UP.path,

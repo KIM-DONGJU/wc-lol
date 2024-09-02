@@ -18,9 +18,9 @@
                 <router-link :to="SIGN_UP.path">
                   <VBtn
                     :color="styles.primary"
+                    :style="{ marginRight: '10px' }"
                     size="small"
                     variant="outlined"
-                    :style="{ marginRight: '10px' }"
                   >
                     회원가입
                   </VBtn>
