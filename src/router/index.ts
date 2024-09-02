@@ -1,5 +1,5 @@
 import {
-  CHAMPIONS,
+  CHAMPIONLIST,
   CREATE_MATCH,
   LOGIN,
   MEMBER_LIST,
@@ -30,8 +30,8 @@ const router = createRouter({
       component: () => import('@/views/CreateMatchView.vue'),
     },
     {
-      path: CHAMPIONS.path,
-      name: CHAMPIONS.name,
+      path: CHAMPIONLIST.path,
+      name: CHAMPIONLIST.name,
       component: () => import('@/views/ChampionList.vue'),
     },
     {
