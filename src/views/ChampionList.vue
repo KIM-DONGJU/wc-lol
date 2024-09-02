@@ -8,7 +8,6 @@
         :color="styles.primary"
         placeholder="챔피언 이름을 입력하세요"
         density="compact"
-        width="100%"
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
         @input="filterChampions(selectedFilter)"
@@ -149,17 +148,27 @@ onMounted(() => {
       white-space: nowrap;
     }
   }
-  @media (width <= 1024px) {
+  @media (width <= 1000px) {
     .champion__champions {
       grid-template-columns: repeat(5, 1fr);
     }
   }
-  @media (width <= 512px) {
+  @media (width <= 700px) {
+    .champion__champions {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  @media (width <= 500px) {
     .champion__champions {
       grid-template-columns: repeat(3, 1fr);
     }
   }
-  @media (width <= 256px) {
+  @media (width <= 300px) {
+    .champion__champions {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (width <= 200px) {
     .champion__champions {
       grid-template-columns: repeat(1, 1fr);
     }
