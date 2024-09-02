@@ -44,6 +44,7 @@
               prepend-inner-icon="mdi-magnify"
               hide-details
               clearable
+              @click:clear="clearInput"
             />
           </template>
           <template #default="{ items }">
@@ -442,6 +443,10 @@ const deleteMatch = async () => {
   } finally {
     commonStore.setLoadingSpinner(false);
   }
+};
+
+const clearInput = () => {
+  search.value = '';
 };
 </script>
 <style lang="scss" scoped>

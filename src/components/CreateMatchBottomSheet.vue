@@ -45,6 +45,7 @@
               prepend-inner-icon="mdi-magnify"
               hide-details
               clearable
+              @click:clear="clearInput"
             />
           </template>
           <template #default="{ items }">
@@ -425,6 +426,10 @@ const loadPreviousMatchRecord = () => {
     Object.values(team).filter((user) => user)
   );
   teamList.value = previousMatchRecord.value.teams;
+};
+
+const clearInput = () => {
+  search.value = '';
 };
 </script>
 <style lang="scss" scoped>

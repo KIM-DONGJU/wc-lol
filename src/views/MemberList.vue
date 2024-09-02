@@ -12,6 +12,7 @@
         prepend-inner-icon="mdi-magnify"
         hide-details
         clearable
+        @click:clear="clearInput"
       />
     </div>
     <div class="wrap-tier-table">
@@ -99,6 +100,9 @@ const goMemberDetail = (member: GroupMember) => {
 };
 
 const isAdmin = computed(() => usersStore.currentMemberInGroup?.role === 'admin');
+const clearInput = () => {
+  searchInput.value = '';
+};
 </script>
 <style lang="scss" scoped>
 .member-list-root {

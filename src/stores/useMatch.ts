@@ -97,7 +97,8 @@ export const useMatchStore = defineStore('match', () => {
   };
 
   const getMatchGroupsTwelveHoursAgo = async () => {
-    const twelveHoursAgoUTC = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+    // 일단 3일치 보이도록 임시 설정, 원래 12시간으로 할 예정이었음
+    const twelveHoursAgoUTC = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
 
     const { data } = await supabase
       .from('match_groups')

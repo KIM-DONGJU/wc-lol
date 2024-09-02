@@ -12,6 +12,7 @@
         prepend-inner-icon="mdi-magnify"
         hide-details
         clearable
+        @click:clear="clearInput"
       />
     </div>
     <header class="wrap-tier-header">
@@ -182,6 +183,10 @@ const getPositionImage = (position: string) => {
     case 'sup':
       return sup;
   }
+};
+
+const clearInput = () => {
+  searchInput.value = '';
 };
 </script>
 

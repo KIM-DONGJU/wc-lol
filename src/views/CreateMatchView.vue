@@ -110,12 +110,14 @@
                 @click="selectWinningTeam(match, index, teamIndex)"
               >
                 <div
-                  v-for="(member, position) in team"
+                  v-for="position in POSITION_LIST"
                   :key="position"
                   class="member d-flex flex-column justify-center align-center"
                 >
-                  <p class="member-name d-flex align-center text-center">{{ member.name }}</p>
-                  <p class="member-nickname mt-1 text-center">{{ member.nickname }}</p>
+                  <p class="member-name d-flex align-center text-center">
+                    {{ team[position].name }}
+                  </p>
+                  <p class="member-nickname mt-1 text-center">{{ team[position].nickname }}</p>
                 </div>
               </div>
             </div>
@@ -177,6 +179,7 @@ import CreateMatchBottomSheet from '@/components/CreateMatchBottomSheet.vue';
 import UpdateMatchBottomSheet from '@/components/UpdateMatchBottomSheet.vue';
 import DeleteMatchGroupConfirmModal from '@/components/DeleteMatchGroupConfirmModal.vue';
 import MatchGroupVictoryConfirmModal from '@/components/MatchGroupVictoryConfirmModal.vue';
+import { POSITION_LIST } from '@/constants/position';
 
 const authStore = useAuthStore();
 const commonStore = useCommonStore();
