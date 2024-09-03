@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { supabase } from '@/supabase';
-import type { CHAMPION } from '@/constants/champion';
+import { LOL_API_URL, type CHAMPION } from '@/constants/champion';
 
 import axios from 'axios';
 
@@ -59,7 +59,7 @@ export const useChampions = () => {
   // API로부터 데이터를 가져와 Supabase에 저장하는 함수
   const saveChampions = async () => {
     try {
-      const LOL_API = 'https://ddragon.leagueoflegends.com/cdn/14.17.1/data/ko_KR/champion.json';
+      const LOL_API = LOL_API_URL;
       const response = await axios.get(LOL_API);
       const championsData = response.data.data;
 

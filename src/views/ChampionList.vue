@@ -3,14 +3,14 @@
     <div class="champion__search">
       <!-- 검색 입력 필드 -->
       <v-text-field
-        v-model="searchChampion"
+        v-model="searchChampion.value"
         :base-color="styles.primary"
         :color="styles.primary"
         placeholder="챔피언 이름을 입력하세요"
         density="compact"
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
-        @input="filterChampions(selectedFilter)"
+        @input="filterChampions(selectedFilter.value)"
       />
     </div>
     <!-- 포지션 필터링 버튼 -->
@@ -20,7 +20,7 @@
         :key="header.value"
         :class="[
           'chapion__header-position',
-          { 'chapion__header__position-selected': selectedFilter === header.value },
+          { 'chapion__header__position-selected': selectedFilter.value === header.value },
         ]"
         @click="() => filterChampions(header.value)"
       >
@@ -36,7 +36,7 @@
 
     <!-- 챔피언 목록 -->
     <div class="champion__champions">
-      <div v-for="champion in filteredChampions" :key="champion.key">
+      <div v-for="champion in filteredChampions.value" :key="champion.key">
         <img :alt="champion.name" :src="champion.image_url" class="champion__img" />
         <h2 class="champion__name">{{ champion.name }}</h2>
       </div>
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useChampions } from '@/stores/useChampion';
 import styles from '@/styles/_export.module.scss';
 
@@ -55,8 +55,14 @@ import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
 import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
 import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
 
-const { filteredChampions, selectedFilter, searchChampion, fetchChampionsData, filterChampions } =
-  useChampions();
+const store = useChampions();
+
+const filteredChampions = computed(() => store.filteredChampions);
+const selectedFilter = computed(() => store.selectedFilter);
+const searchChampion = computed(() => store.searchChampion);
+
+const fetchChampionsData = () => store.fetchChampionsData();
+const filterChampions = (position: string) => store.filterChampions(position);
 
 const headerList = [
   { title: '전체', value: 'all' },
@@ -124,8 +130,9 @@ onMounted(() => {
 
   .champion__champions {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
     gap: 10px 20px;
+    width: 100%;
     margin-top: 20px;
 
     .champion__img {
@@ -146,31 +153,6 @@ onMounted(() => {
       text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-  }
-  @media (width <= 1000px) {
-    .champion__champions {
-      grid-template-columns: repeat(5, 1fr);
-    }
-  }
-  @media (width <= 700px) {
-    .champion__champions {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-  @media (width <= 500px) {
-    .champion__champions {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  @media (width <= 300px) {
-    .champion__champions {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (width <= 200px) {
-    .champion__champions {
-      grid-template-columns: repeat(1, 1fr);
     }
   }
 }
