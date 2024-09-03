@@ -132,8 +132,8 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
     gap: 10px 20px;
-    width: 100%;
     margin-top: 20px;
+    width: 100%;
 
     .champion__img {
       width: 75px;

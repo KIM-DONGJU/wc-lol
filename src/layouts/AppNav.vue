@@ -32,13 +32,13 @@ import { useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/auth';
 import {
+  CHAMPIONLIST,
   CREATE_MATCH,
   LOGIN,
   MEMBER_LIST,
   NOT_FOUND,
   SIGN_UP,
   USER_TIER,
-  CHAMPIONLIST,
 } from '@/constants/routes';
 
 const route = useRoute();
