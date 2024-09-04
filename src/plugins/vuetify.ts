@@ -14,6 +14,7 @@ import { createVuetify } from 'vuetify';
 
 const customColor = {
   primary: styles.primary,
+  error: styles.error,
 };
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides

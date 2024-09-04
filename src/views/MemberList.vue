@@ -12,6 +12,7 @@
         prepend-inner-icon="mdi-magnify"
         hide-details
         clearable
+        @click:clear="clearInput"
       />
     </div>
     <div class="wrap-tier-table">
@@ -53,7 +54,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { type GroupMember, useUsersStore } from '@/stores/users';
+import { type GroupMember, useUsersStore } from '@/stores/useUsers';
 
 import { POSITION_LIST } from '@/constants/position';
 import styles from '@/styles/_export.module.scss';
@@ -99,6 +100,9 @@ const goMemberDetail = (member: GroupMember) => {
 };
 
 const isAdmin = computed(() => usersStore.currentMemberInGroup?.role === 'admin');
+const clearInput = () => {
+  searchInput.value = '';
+};
 </script>
 <style lang="scss" scoped>
 .member-list-root {

@@ -2,7 +2,7 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { supabase } from '@/supabase';
 
-import { useAuthStore } from './auth';
+import { useAuthStore } from './useAuth';
 
 export type Position = 'top' | 'mid' | 'sup' | 'jungle' | 'adc';
 
