@@ -1,479 +1,592 @@
 <template>
   <div class="create-match-root">
-    <v-card class="wrap-search-user-list" width="100%">
-      <v-data-iterator
-        :items="parsingGroupMembers"
-        :items-per-page="30"
-        :search="search"
-        width="100%"
-      >
-        <template #header>
-          <p>금일 내전 참가자 검색 및 등록</p>
-          <v-text-field
-            v-model="search"
-            :base-color="styles.primary"
-            :color="styles.primary"
-            class="mt-3"
-            style="max-width: 300px"
+    <div v-show="winningTeamSelectIndex !== null" class="dim" @click="cancelSelectWiningTeam"></div>
+    <div class="wrap-create-match-group d-flex justify-center align-center">
+      <div class="w-100 px-3 wrap-buttons d-flex justify-space-between align-center">
+        <div class="flex-1-1 d-flex align-center">
+          <VSelect
+            v-model="selectMatchGroupId"
+            :items="matchGroupsSelectLabel"
+            label="대전 그룹 선택"
             width="100%"
+            max-width="250px"
             variant="outlined"
-            density="compact"
-            placeholder="이름, 닉네임 검색"
-            prepend-inner-icon="mdi-magnify"
+            no-data-text="대전 그룹이 없습니다."
+            placeholder="대전 그룹을 선택해 주세요."
             hide-details
-            clearable
           />
-        </template>
-        <template #default="{ items }">
-          <div class="wrap-search-users-info mt-5">
-            <div
-              v-for="(item, index) in items"
-              :key="index"
-              :class="selectedUserStyle(item.raw)"
-              class="user-name"
-              @click="onSelectGroupMember(item.raw)"
-            >
-              {{ item.raw.name }} ({{ item.raw.nickname }})
-            </div>
-          </div>
-        </template>
-        <template #footer="{ page, pageCount, prevPage, nextPage }">
-          <div class="d-flex align-center justify-center pa-4">
-            <v-btn
-              :disabled="page === 1"
-              density="comfortable"
-              icon="mdi-arrow-left"
-              rounded
-              variant="tonal"
-              @click="prevPage"
-            />
-
-            <div class="mx-2 text-caption">Page {{ page }} of {{ pageCount }}</div>
-
-            <v-btn
-              :disabled="page >= pageCount"
-              density="comfortable"
-              icon="mdi-arrow-right"
-              rounded
-              variant="tonal"
-              @click="nextPage"
-            />
-          </div>
-        </template>
-      </v-data-iterator>
-    </v-card>
-    <div class="wrap-today-participant">
-      <div class="wrap-tables">
-        <p class="font-weight-bold text-h6">
-          금일 내전 참가자 목록 ({{ selectedGroupMembers.length }}명)
-        </p>
-        <div v-if="selectedGroupMembers.length" class="today-participant d-flex mt-4">
-          <div
-            v-if="nonTeamSelectedMembers.length"
-            class="d-flex flex-column wrap-select-tier-table"
+          <VBtn
+            :color="styles.primary"
+            :base-color="styles.primary"
+            class="ml-3"
+            size="x-large"
+            height="56px"
+            variant="outlined"
+            @click="insertMatchGroup"
           >
-            <div
-              v-for="(selectedMembers, index) in nonTeamSelectedMembers"
-              :key="index"
-              class="select-tier-table d-flex"
-              draggable="true"
-              @dragstart="startDrag($event, index)"
-            >
-              <p class="tier-table-left d-flex justify-center align-center text-center">
-                {{ selectedMembers.name }}<br />
-                ({{ selectedMembers.nickname }})
-              </p>
-              <div class="tier-table-right d-flex flex-column">
-                <p
-                  v-for="(score, position) in getMainPostionAndSubPosition(selectedMembers)"
-                  :key="position"
-                  class="flex-1-1"
-                >
-                  {{ POSITION_KR[position] }}: {{ score }}점
-                </p>
-              </div>
-              <v-tooltip activator="parent" location="top">
-                <p v-for="(score, key) in selectedMembers.positionScore" :key="key">
-                  {{ POSITION_KR[key] }}: {{ score }}점
-                </p>
-              </v-tooltip>
-            </div>
-          </div>
-          <table class="participant-table">
-            <tr class="header">
-              <th></th>
-              <th class="first text-h5">1팀</th>
-              <th class="second text-h5">2팀</th>
-            </tr>
-            <tr v-for="(position, index) in positionList" :key="index">
-              <td>{{ position.label }}</td>
-              <td
-                @dragenter.prevent
-                @dragover.prevent
-                @drop.prevent="onDrop($event, 0, position.value)"
-              >
-                <div
-                  v-if="teamList[0][position.value]"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 0, position.value)"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0][position.value]?.name }}</p>
-                    <p>({{ teamList[0][position.value]?.nickname }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[0][position.value]?.positionScore[position.value] }}점</p>
-                  </div>
-                  <v-tooltip activator="parent" location="top">
-                    <p
-                      v-for="(score, key) in teamList[0][position.value]?.positionScore"
-                      :key="key"
-                    >
-                      {{ POSITION_KR[key] }}: {{ score }}점
-                    </p>
-                  </v-tooltip>
-                </div>
-              </td>
-              <td
-                @dragenter.prevent
-                @dragover.prevent
-                @drop.prevent="onDrop($event, 1, position.value)"
-              >
-                <div
-                  v-if="teamList[1][position.value]"
-                  class="position-user d-flex justify-center align-center"
-                  draggable="true"
-                  @dragstart="changeDrag($event, 1, position.value)"
-                >
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1][position.value]?.name }}</p>
-                    <p>({{ teamList[1][position.value]?.nickname }})</p>
-                  </div>
-                  <div class="w-50 text-center">
-                    <p>{{ teamList[1][position.value]?.positionScore[position.value] }}점</p>
-                  </div>
-                  <v-tooltip activator="parent" location="top">
-                    <p
-                      v-for="(score, key) in teamList[1][position.value]?.positionScore"
-                      :key="key"
-                    >
-                      {{ POSITION_KR[key] }}: {{ score }}점
-                    </p>
-                  </v-tooltip>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>포인트 합</td>
-              <td>{{ sumPoints[0] }}점</td>
-              <td>{{ sumPoints[1] }}점</td>
-            </tr>
-          </table>
+            대전 그룹 생성
+          </VBtn>
+        </div>
+        <div v-if="!selectedMatchGroup?.is_fixed" class="d-flex align-center">
+          <VBtn
+            v-if="selectedMatchGroup && matches.length > 0"
+            :color="styles.primary"
+            variant="tonal"
+            @click="openMatchGroupVictoryConfirmModal"
+          >
+            승자 확정
+          </VBtn>
+          <VBtn
+            v-if="selectMatchGroupId"
+            :color="styles.error"
+            class="ml-3"
+            @click="openDeleteMatchGroupConfirmModal"
+          >
+            대전 그룹 삭제
+          </VBtn>
         </div>
       </div>
     </div>
-    <!-- <v-snackbar v-model="isVisibleMessage" multi-line>
-      내전 참가자는 최대 10명까지 등록 가능합니다. <br />
-      참가자를 다시 확인해주세요.
-    </v-snackbar> -->
+    <VDivider class="mt-6" />
+    <div class="mt-10 wrap-create-match d-flex flex-column justify-center align-center">
+      <div v-if="!selectMatchGroupId" class="w-100 d-flex flex-column justify-center align-center">
+        <VImg src="@/assets/images/error/secure_data.svg" width="100%" max-width="400px" />
+        <p class="mt-10 w-100 d-flex flex-column justify-center align-center">
+          <span class="text-h6 text-center">대전 그룹을 선택해 주세요 </span>
+        </p>
+      </div>
+      <template v-else>
+        <div
+          v-if="matches && !matches.length"
+          class="w-100 d-flex flex-column justify-center align-center"
+        >
+          <VImg src="@/assets/images/error/cancel.svg" width="100%" max-width="400px" />
+          <p class="mt-10 w-100 d-flex flex-column justify-center align-center">
+            <span class="font-weight-bold text-h5 text-center">{{
+              selectedMatchGroup.group_name
+            }}</span>
+            <span class="mt-2 text-h6 text-center">대전 그룹에 생성된 대전이 없습니다. </span>
+          </p>
+        </div>
+        <div v-else class="wrap-matches d-flex flex-column">
+          <div
+            v-for="(match, index) in matches"
+            :key="match.id"
+            :class="getSelectWinningTeamClass(index)"
+            class="wrap-match pa-5"
+          >
+            <div class="match-round pb-1 d-flex justify-space-between">
+              <p class="text-h6 text-primary font-weight-bold">{{ matches.length - index }}경기</p>
+              <div v-if="!selectedMatchGroup?.is_fixed" class="d-flex">
+                <VBtn
+                  v-if="winningTeamSelectIndex === null || winningTeamSelectIndex !== index"
+                  :color="styles.primary"
+                  size="small"
+                  @click="selectReadyWinningTeam(index)"
+                >
+                  <span class="mr-1"> 승리팀 </span>
+                  <span v-if="match.wining_team_number === null"> 선택 </span>
+                  <span v-else> 변경 </span>
+                </VBtn>
+                <VBtn v-else :color="styles.error" size="small" @click="cancelSelectWiningTeam">
+                  취소
+                </VBtn>
+                <VBtn
+                  :disabled="winningTeamSelectIndex !== null"
+                  size="small"
+                  class="ml-2"
+                  @click="openUpdateMatchBottomSheet(match, index)"
+                >
+                  수정
+                </VBtn>
+              </div>
+            </div>
+            <div class="match mt-5 d-flex flex-column">
+              <div
+                v-for="(team, teamIndex) in match.teams"
+                :key="teamIndex"
+                :class="getLoseTeamClass(match, teamIndex)"
+                class="wrap-member d-flex align-center"
+                @click="selectWinningTeam(match, index, teamIndex)"
+              >
+                <div
+                  v-for="position in POSITION_LIST"
+                  :key="position"
+                  class="member d-flex flex-column justify-center align-center"
+                >
+                  <p class="member-name d-flex align-center text-center">
+                    {{ team[position].name }}
+                  </p>
+                  <p class="member-nickname mt-1 text-center">{{ team[position].nickname }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="!selectedMatchGroup?.is_fixed"
+          :class="winningTeamSelectIndex !== null && 'opacity-20'"
+          class="mt-10 px-5 create-match w-100 d-flex justify-end"
+        >
+          <VBtn
+            :color="styles.primary"
+            variant="tonal"
+            size="x-large"
+            @click="openCreateMatchBottomSheet"
+          >
+            대전 생성
+          </VBtn>
+        </div>
+      </template>
+    </div>
+    <CreateMatchGroupModal v-model:dialog="isVisibleCreateMatchGroupModal" />
+    <CreateMatchBottomSheet
+      v-if="isVisibleCreateMatchBottomSheet"
+      v-model="isVisibleCreateMatchBottomSheet"
+      :match-group="selectedMatchGroup"
+    />
+    <UpdateMatchBottomSheet
+      v-if="isVisibleUpdateMatchBottomSheet"
+      v-model="isVisibleUpdateMatchBottomSheet"
+      :match="updatingMatch"
+      :match-group="selectedMatchGroup"
+      :match-index="updatingMatchIndex"
+    />
+    <DeleteMatchGroupConfirmModal
+      v-model:dialog="isVisibleDeleteMatchGroupConfirmModal"
+      :match-group="selectedMatchGroup"
+      @confirm="deleteMatchGroup"
+    />
+    <MatchGroupVictoryConfirmModal
+      v-model:dialog="isVisibleMatchGroupVictoryConfirmModal"
+      :match-group="selectedMatchGroup"
+      @confirm="onMatchGroupVictoryConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-import { POSITION_KR } from '@/constants/position';
-import { type GroupMember, type Position, useUsersStore } from '@/stores/users';
+import { useAuthStore } from '@/stores/useAuth';
+import { useCommonStore } from '@/stores/useCommon';
+import { type Match, type MatchGroup, useMatchStore } from '@/stores/useMatch';
+
+import CreateMatchGroupModal from '@/components/CreateMatchGroupModal.vue';
 
 import styles from '@/styles/_export.module.scss';
+import CreateMatchBottomSheet from '@/components/CreateMatchBottomSheet.vue';
+import UpdateMatchBottomSheet from '@/components/UpdateMatchBottomSheet.vue';
+import DeleteMatchGroupConfirmModal from '@/components/DeleteMatchGroupConfirmModal.vue';
+import MatchGroupVictoryConfirmModal from '@/components/MatchGroupVictoryConfirmModal.vue';
+import { POSITION_LIST } from '@/constants/position';
 
-const usersStore = useUsersStore();
+const authStore = useAuthStore();
+const commonStore = useCommonStore();
+const matchStore = useMatchStore();
 
-const positionList = [
-  {
-    label: '탑',
-    value: 'top',
-  },
-  {
-    label: '정글',
-    value: 'jungle',
-  },
-  {
-    label: '미드',
-    value: 'mid',
-  },
-  {
-    label: '원딜',
-    value: 'adc',
-  },
-  {
-    label: '서폿',
-    value: 'sup',
-  },
-] as const;
+const selectMatchGroupId = ref<null | number>(null);
+const isVisibleCreateMatchGroupModal = ref(false);
 
-const search = ref('');
+const insertMatchGroup = () => {
+  if (!authStore.user?.id) {
+    commonStore.showToast({
+      message: '로그인이 필요합니다.',
+      color: 'error',
+    });
 
-const parsingGroupMembers = computed(() => {
-  return usersStore.groupMembers;
-});
-
-const selectedGroupMembers = ref<GroupMember[]>([]);
-const isVisibleMessage = ref(false);
-const onSelectGroupMember = (groupMember: GroupMember) => {
-  const findGroupMemberIndex = selectedGroupMembers.value.findIndex(
-    (item) => item.name === groupMember.name && item.nickname === groupMember.nickname
-  );
-
-  if (findGroupMemberIndex !== -1) {
-    selectedGroupMembers.value.splice(findGroupMemberIndex, 1);
     return;
   }
 
-  selectedGroupMembers.value.push(groupMember);
+  isVisibleCreateMatchGroupModal.value = true;
 };
 
-const teamList = ref<Record<Position, GroupMember | null>[]>([
-  {
-    top: null,
-    jungle: null,
-    mid: null,
-    adc: null,
-    sup: null,
-  },
-  {
-    top: null,
-    jungle: null,
-    mid: null,
-    adc: null,
-    sup: null,
-  },
-]);
+const getMatchGroups = async () => {
+  if (matchStore.matchGroups) {
+    return;
+  }
 
-const sumPoints = computed(() => {
-  const firstTeamPoints = Object.entries(teamList.value[0]).reduce((total, [key, value]) => {
-    const positionKey = key as Position;
-    return total + (value?.positionScore[positionKey] || 0);
-  }, 0);
+  try {
+    commonStore.setLoadingSpinner(true);
 
-  const secondPoints = Object.entries(teamList.value[1]).reduce((total, [key, value]) => {
-    const positionKey = key as Position;
-    return total + (value?.positionScore[positionKey] || 0);
-  }, 0);
+    const data = await matchStore.getMatchGroupsTwelveHoursAgo();
+    if (data && data.length > 0) {
+      matchStore.setMatchGroups(data);
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    commonStore.setLoadingSpinner(false);
+  }
+};
 
-  return [firstTeamPoints, secondPoints];
+getMatchGroups();
+const matchGroupsSelectLabel = computed(() => {
+  return matchStore.matchGroups?.map((item) => {
+    return {
+      title: item.group_name,
+      value: item.id,
+    };
+  });
 });
 
-const selectedUserStyle = (groupMember: GroupMember) => {
-  const findGroupMember = selectedGroupMembers.value.find((item) => item.id === groupMember.id);
+const selectedMatchGroup = computed(() => {
+  return matchStore.matchGroups?.find((item) => item.id === selectMatchGroupId.value) as MatchGroup;
+});
 
-  return findGroupMember ? 'selected-user' : '';
+const isVisibleCreateMatchBottomSheet = ref(false);
+const openCreateMatchBottomSheet = () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  if (!authStore.user?.id) {
+    commonStore.showToast({
+      message: '로그인이 필요합니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  isVisibleCreateMatchBottomSheet.value = true;
 };
 
-const nonTeamSelectedMembers = computed(() => {
-  const flatTeamList = teamList.value.flatMap((team) => Object.values(team).flat());
-  const filterTeamList = selectedGroupMembers.value.filter(
-    (originUser) =>
-      !flatTeamList.find(
-        (user) => user?.name === originUser.name && user?.nickname === originUser.nickname
-      )
+const matches = computed(() => matchStore.matches);
+const isVisibleMatchGroupVictoryConfirmModal = ref(false);
+const openMatchGroupVictoryConfirmModal = () => {
+  isVisibleMatchGroupVictoryConfirmModal.value = true;
+};
+
+const onMatchGroupVictoryConfirm = async () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  if (authStore.user?.id !== selectedMatchGroup.value?.creator_id) {
+    commonStore.showToast({
+      message: '대전 그룹을 만든 사람만 승자 팀을 확정할 수 있습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  const isEveryMatchWinningTeamSelected = matches.value.every(
+    (match) => match.wining_team_number !== null
   );
 
-  return filterTeamList;
-});
+  if (!isEveryMatchWinningTeamSelected) {
+    commonStore.showToast({
+      message: '모든 경기의 승리팀을 선택해 주세요.',
+      color: 'error',
+    });
 
-const startDrag = (e: DragEvent, index: number) => {
-  if (e.dataTransfer) {
-    e.dataTransfer.setData('selectedGroupMemberIndex', `${index}`);
-  }
-};
-
-const changeDrag = (e: DragEvent, teamNumber: number, position: Position) => {
-  if (e.dataTransfer) {
-    e.dataTransfer.setData('dragType', 'change');
-    e.dataTransfer.setData('teamNumber', `${teamNumber}`);
-    e.dataTransfer.setData('position', position);
-  }
-};
-
-const getMainPostionAndSubPosition = (groupMember: GroupMember) => {
-  const mainPositionScore = groupMember.positionScore[groupMember.mainPosition];
-  const position: Partial<Record<Position, number>> = {
-    [groupMember.mainPosition]: mainPositionScore,
-  };
-
-  if (groupMember.subPosition) {
-    position[groupMember.subPosition] = groupMember.positionScore[groupMember.subPosition];
+    return;
   }
 
-  return position;
-};
+  let firstTeamWinCount = 0;
+  let secondTeamWinCount = 0;
 
-const onDrop = (e: DragEvent, teamNumber: number, position: Position) => {
-  if (e.dataTransfer) {
-    if (e.dataTransfer.getData('dragType') === 'change') {
-      const originTeamNumber = Number(e.dataTransfer.getData('teamNumber'));
-      const originTeamPosition = e.dataTransfer.getData('position') as Position;
-      const originMember = teamList.value[originTeamNumber][originTeamPosition] as GroupMember;
-      const changeTeamMember = teamList.value[teamNumber][position];
-
-      const findOriginMember = selectedGroupMembers.value.find((member) => {
-        return member.id === originMember.id;
-      });
-      teamList.value[teamNumber][position] = findOriginMember || null;
-      if (changeTeamMember === null) {
-        teamList.value[originTeamNumber][originTeamPosition] = null;
-        return;
-      }
-
-      const findChangeUser = selectedGroupMembers.value.find((member) => {
-        return member.id === changeTeamMember.id;
-      });
-      teamList.value[originTeamNumber][originTeamPosition] = findChangeUser || null;
-      return;
+  matches.value.forEach((match) => {
+    if (match.wining_team_number === 0) {
+      firstTeamWinCount += 1;
+    } else {
+      secondTeamWinCount += 1;
     }
+  });
 
-    const index = Number(e.dataTransfer.getData('selectedGroupMemberIndex'));
-    teamList.value[teamNumber][position] = nonTeamSelectedMembers.value[index];
+  let winnerGroupMemberIds: number[] = [];
+  let loserGroupMemberIds: number[] = [];
+
+  if (firstTeamWinCount !== secondTeamWinCount) {
+    const lastMatches = matches.value[matches.value.length - 1];
+
+    if (firstTeamWinCount > secondTeamWinCount) {
+      winnerGroupMemberIds = Object.values(lastMatches.teams[0]).map((member) => member.id);
+      loserGroupMemberIds = Object.values(lastMatches.teams[1]).map((member) => member.id);
+    } else {
+      winnerGroupMemberIds = Object.values(lastMatches.teams[1]).map((member) => member.id);
+      loserGroupMemberIds = Object.values(lastMatches.teams[0]).map((member) => member.id);
+    }
   }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+
+    const data = await matchStore.onFixedGroupMatch({
+      groupId: selectMatchGroupId.value,
+      winnerGroupMemberIds,
+      loserGroupMemberIds,
+    });
+
+    if (data && data.length > 0) {
+      commonStore.showToast({
+        message: '승자 팀이 확정되었습니다.',
+        color: 'success',
+      });
+
+      matchStore.setMatchGroup(data[0]);
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    isVisibleMatchGroupVictoryConfirmModal.value = false;
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
+const isVisibleDeleteMatchGroupConfirmModal = ref(false);
+const openDeleteMatchGroupConfirmModal = () => {
+  isVisibleDeleteMatchGroupConfirmModal.value = true;
+};
+const deleteMatchGroup = async () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  if (authStore.user?.id !== selectedMatchGroup.value?.creator_id) {
+    commonStore.showToast({
+      message: '대전 그룹을 만든 사람만 삭제할 수 있습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  if (selectedMatchGroup.value?.is_fixed) {
+    commonStore.showToast({
+      message: '대전 그룹이 확정되어 삭제할 수 없습니다.',
+      color: 'error',
+    });
+
+    return;
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+    const data = await matchStore.deleteMatchGroup(selectMatchGroupId.value);
+
+    if (data && data.length > 0) {
+      commonStore.showToast({
+        message: '대전 그룹이 삭제되었습니다.',
+        color: 'success',
+      });
+
+      matchStore.removeMatchGroupByGroupId(data[0].id);
+      matchStore.setMatches([]);
+      selectMatchGroupId.value = null;
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    isVisibleDeleteMatchGroupConfirmModal.value = false;
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
+const getMatches = async () => {
+  if (!selectMatchGroupId.value) {
+    return;
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+    const data = await matchStore.getMatchesByGroupId(selectMatchGroupId.value);
+
+    if (data) {
+      matchStore.setMatches(data);
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
+watch(
+  () => selectMatchGroupId.value,
+  () => {
+    getMatches();
+  }
+);
+
+const winningTeamSelectIndex = ref<null | number>(null);
+const selectReadyWinningTeam = (index: number) => {
+  winningTeamSelectIndex.value = index;
+};
+
+const selectWinningTeam = async (match: Match, matchIndex: number, teamIndex: number) => {
+  if (winningTeamSelectIndex.value === null) {
+    return;
+  }
+
+  if (winningTeamSelectIndex.value !== matchIndex) {
+    return;
+  }
+
+  if (match.wining_team_number === teamIndex) {
+    commonStore.showToast({
+      message: '기존 승리팀과 동일한 팀을 선택할 수 없습니다.',
+      color: 'error',
+    });
+
+    winningTeamSelectIndex.value = null;
+    return;
+  }
+
+  try {
+    commonStore.setLoadingSpinner(true);
+    const data = await matchStore.selectWinningTeam({
+      matchId: match.id,
+      winningTeamNumber: teamIndex,
+    });
+    if (data && data.length > 0) {
+      const message =
+        match.wining_team_number === null ? '승리팀이 선택되었습니다.' : '승리팀이 변경되었습니다.';
+
+      matchStore.setMatch(data[0]);
+      commonStore.showToast({
+        message,
+        color: 'success',
+      });
+      winningTeamSelectIndex.value = null;
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    commonStore.setLoadingSpinner(false);
+  }
+};
+
+const cancelSelectWiningTeam = () => {
+  winningTeamSelectIndex.value = null;
+};
+
+const getLoseTeamClass = (match: Match, teamIndex: number) => {
+  if (
+    winningTeamSelectIndex.value === null &&
+    match.wining_team_number !== null &&
+    match.wining_team_number !== teamIndex
+  ) {
+    return 'opacity-20';
+  }
+
+  return '';
+};
+
+const getSelectWinningTeamClass = (teamIndex: number) => {
+  if (winningTeamSelectIndex.value === null) {
+    return '';
+  }
+
+  return {
+    'selected-team': winningTeamSelectIndex.value === teamIndex,
+    'opacity-20': winningTeamSelectIndex.value !== teamIndex,
+    'back-team': winningTeamSelectIndex.value !== teamIndex,
+  };
+};
+
+const isVisibleUpdateMatchBottomSheet = ref(false);
+const updatingMatch = ref<null | Match>(null);
+const updatingMatchIndex = ref(-1);
+
+const openUpdateMatchBottomSheet = (match: Match, index: number) => {
+  updatingMatch.value = match;
+  updatingMatchIndex.value = index;
+  isVisibleUpdateMatchBottomSheet.value = true;
 };
 </script>
 
 <style scoped lang="scss">
 .create-match-root {
-  .wrap-search-user-list {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 0 10px 20px;
-
-    :deep(.v-data-iterator) {
-      width: 100%;
-      max-width: 1280px;
-    }
-
-    .wrap-search-users-info {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      width: 100%;
-
-      .user-name {
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 50px;
-        padding: 0 10px;
-        font-size: 14px;
-        line-height: 20px;
-        text-align: center;
-        word-break: keep-all; /* 단어 단위로 줄바꿈 */
-        overflow-wrap: break-word;
-        white-space: normal; /* 기본값으로 줄바꿈을 허용 */
-        cursor: pointer;
-        border: solid 1px #5382e8;
-        border-radius: 4px;
-      }
-
-      .selected-user {
-        color: #fff;
-        background-color: #5382e8;
-      }
-    }
+  .dim {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(0 0 0 / 50%);
   }
 
-  .wrap-today-participant {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 20px 10px;
+  .wrap-buttons {
+    max-width: 1280px;
+  }
 
-    .wrap-tables {
+  .wrap-create-match {
+    .create-match {
       width: 100%;
-      max-width: 1280px;
+      max-width: 660px;
+    }
 
-      .today-participant {
-        gap: 60px;
+    .wrap-matches {
+      gap: 40px;
+      width: 100%;
+      max-width: 660px;
 
-        .wrap-select-tier-table {
-          gap: 12px;
+      .selected-team {
+        z-index: 20;
+        background-color: #fff;
+        border-radius: 4px;
 
-          .select-tier-table {
-            width: 320px;
-            cursor: pointer;
-            border: solid 1px #5382e8;
-            border-radius: 4px;
+        .wrap-member {
+          cursor: pointer;
+          opacity: 0.3;
 
-            .tier-table-left {
-              width: 50%;
-              padding: 10px;
-              border-right: solid 1px #5382e8;
-            }
-
-            .tier-table-right {
-              gap: 5px;
-              width: 50%;
-              padding: 10px;
-            }
+          &:hover {
+            opacity: 1;
           }
         }
       }
-    }
 
-    .participant-table {
-      height: 400px;
-      table-layout: fixed;
-      border-spacing: 0;
-
-      th {
-        height: 25px;
+      .back-team {
+        z-index: -1;
       }
 
-      td {
-        height: 75px;
+      .match-round {
+        border-bottom: solid 2px $color-primary;
       }
 
-      th,
-      td {
-        box-sizing: border-box;
-        padding: 10px;
-        text-align: center;
-        vertical-align: middle;
-        border: solid 1px #000;
+      .wrap-match {
+        .match {
+          gap: 10px;
 
-        &:first-child,
-        &:first-of-type {
-          border-top-width: 0;
-          border-left-width: 0;
+          .wrap-member {
+            gap: 10px;
+
+            .member {
+              flex: 1;
+              max-width: 124px;
+              height: 64px;
+              border: solid 0.5px #525c65;
+              border-radius: 2px;
+
+              .member-name {
+                min-width: 40px;
+                height: 20px;
+                padding: 2px 4px;
+                font-size: 12px;
+                color: #fff;
+                background-color: #525c65;
+                border-radius: 2px;
+              }
+
+              .member-nickname {
+                font-size: 14px;
+                color: #525c65;
+              }
+            }
+
+            &:nth-child(2) .member {
+              border: solid 0.5px $color-primary;
+
+              .member-name {
+                background-color: $color-primary;
+              }
+            }
+          }
         }
-      }
-
-      .position-user {
-        gap: 10px;
-        width: 320px;
-        padding: 10px;
-        cursor: pointer;
-        border: solid 1px #5382e8;
-        border-radius: 4px;
-      }
-
-      .header {
-        th {
-          border-top: 0;
-          border-right: 0;
-        }
-
-        .first {
-          border-left: 0;
-        }
-      }
-
-      // 두 번째, 세 번째 td는 width 320px로
-      td:nth-child(2),
-      td:nth-child(3) {
-        width: 341px;
       }
     }
   }

@@ -12,6 +12,7 @@
         prepend-inner-icon="mdi-magnify"
         hide-details
         clearable
+        @click:clear="clearInput"
       />
     </div>
     <header class="wrap-tier-header">
@@ -59,7 +60,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { USER_TIER } from '@/constants/routes';
-import { type Position, useUsersStore } from '@/stores/users';
+import { type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
 
@@ -182,6 +183,10 @@ const getPositionImage = (position: string) => {
     case 'sup':
       return sup;
   }
+};
+
+const clearInput = () => {
+  searchInput.value = '';
 };
 </script>
 

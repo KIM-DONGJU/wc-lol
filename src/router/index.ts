@@ -8,8 +8,8 @@ import {
   USER_DETAIL,
   USER_TIER,
 } from '@/constants/routes';
-import { useAuthStore } from '@/stores/auth';
-import { useUsersStore } from '@/stores/users';
+import { useAuthStore } from '@/stores/useAuth';
+import { useUsersStore } from '@/stores/useUsers';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({

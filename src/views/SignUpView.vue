@@ -4,12 +4,7 @@
     <form @submit.prevent="handleSubmit">
       <div class="inputs">
         <label for="name">이름</label>
-        <input
-          id="name"
-          v-model="bindUserName"
-          type="text"
-          placeholder="이름을 작성해주세요(예: 홍길동)"
-        />
+        <input id="name" v-model="bindUserName" type="text" placeholder="이름을 작성해 주세요" />
         <p v-if="errorMessage.name.isVisible" class="error__message">
           {{ errorMessage.name.message }}
         </p>
@@ -18,7 +13,7 @@
           id="nickname"
           v-model="bindUserNickname"
           type="text"
-          placeholder="롤 닉네임을 작성해주세요(예: 괴롭혀주십시오)"
+          placeholder="롤 닉네임을 작성해 주세요"
         />
         <p v-if="errorMessage.nickname.isVisible" class="error__message">
           {{ errorMessage.nickname.message }}
@@ -28,7 +23,7 @@
           id="email"
           v-model="bindUserEmail"
           type="email"
-          placeholder="이메일을 작성해주세요(예: example@example.com)"
+          placeholder="이메일을 작성해 주세요"
         />
         <p v-if="errorMessage.email.isVisible" class="error__message">
           {{ errorMessage.email.message }}
@@ -39,7 +34,7 @@
           id="password"
           v-model="bindUserPassword"
           type="password"
-          placeholder="최대12자로 작성해주세요"
+          placeholder="최대12자로 작성해 주세요"
           maxlength="12"
         />
         <p v-if="errorMessage.password.isVisible" class="error__message">
@@ -50,7 +45,7 @@
           id="passwordCheck"
           v-model="bindUserPasswordCheck"
           type="password"
-          placeholder="최대12자로 작성해주세요"
+          placeholder="최대12자로 작성해 주세요"
           maxlength="12"
         />
         <p v-if="errorMessage.passwordCheck.isVisible" class="error__message">
@@ -71,7 +66,7 @@
         </p>
       </div>
       <!-- 버튼들 -->
-      <div class="btns">
+      <div class="mt-4 btns">
         <VBtn :color="styles.primary" size="large" variant="outlined" @click="goBack">
           뒤로가기
         </VBtn>
@@ -111,19 +106,19 @@ const userInfo = reactive<Record<UserInfoKey, string>>({
 const errorMessage = reactive({
   name: {
     isVisible: false,
-    message: '이름을 입력해주세요.',
+    message: '이름을 입력해 주세요.',
   },
   nickname: {
     isVisible: false,
-    message: '롤 닉네임을 입력해주세요.',
+    message: '롤 닉네임을 입력해 주세요.',
   },
   email: {
     isVisible: false,
-    message: '이메일을 입력해주세요.',
+    message: '이메일을 입력해 주세요.',
   },
   password: {
     isVisible: false,
-    message: '비밀번호를 입력해주세요.',
+    message: '비밀번호를 입력해 주세요.',
   },
   passwordCheck: {
     isVisible: false,
@@ -131,7 +126,7 @@ const errorMessage = reactive({
   },
   position: {
     isVisible: false,
-    message: '주 포지션을 선택해주세요.',
+    message: '주 포지션을 선택해 주세요.',
   },
 });
 

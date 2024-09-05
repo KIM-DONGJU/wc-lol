@@ -30,7 +30,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/useAuth';
 import {
   CHAMPIONLIST,
   CREATE_MATCH,

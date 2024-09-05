@@ -1,6 +1,6 @@
 import { reactive, ref } from 'vue';
 
-import type { Position } from '@/stores/users';
+import type { Position } from '@/stores/useUsers';
 
 export default function usePosition() {
   const selectedPoints = reactive({
