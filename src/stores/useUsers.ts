@@ -32,6 +32,8 @@ export interface GroupMember {
   userId: string | null;
   positionScore: PositionScore;
   role: 'member' | 'admin';
+  mostChampionsMain: string[];
+  mostChampionsSub: string[] | null;
 }
 
 export const useUsersStore = defineStore(

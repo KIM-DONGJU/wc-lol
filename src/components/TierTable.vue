@@ -48,10 +48,13 @@
           <img :src="getPositionImage(userTier.position)" />
         </p>
         <p>
-          <!-- {{ userTier.mostChampion }} -->
+          <button @click="openChampionModal(userTier)">선택하기</button>
         </p>
       </div>
     </div>
+    <VDialog v-model="isModalOpen" max-width="1000">
+      <SelectMostChampions :user="selectedUser" @close="closeModal" />
+    </VDialog>
   </div>
 </template>
 
@@ -63,6 +66,8 @@ import { USER_TIER } from '@/constants/routes';
 import { type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
+
+import SelectMostChampions from './SelectMostChampions.vue';
 
 import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
 import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
@@ -102,6 +107,23 @@ const headerList = [
 const usersStore = useUsersStore();
 
 const searchInput = ref('');
+
+// 모달 관련 상태값
+const isModalOpen = ref(false); // 모달 열림/닫힘 상태
+const selectedUser = ref(usersStore.$id); // 선택된 유저 정보
+
+// 모달 열기
+const openChampionModal = (userTier: any) => {
+  selectedUser.value = userTier;
+  console.log(selectedUser);
+  isModalOpen.value = true;
+};
+
+// 모달 닫기
+const closeModal = (userTier: any) => {
+  isModalOpen.value = false;
+  selectedUser.value = userTier;
+};
 
 const groupMembers = computed(() => {
   const position = (router.currentRoute.value.params.position || 'all') as Position | 'all';
