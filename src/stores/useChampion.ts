@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { supabase } from '@/supabase';
-import { LOL_API_URL, type CHAMPION } from '@/constants/champion';
+import { LOL_API_URL } from '@/constants/champion';
+import type { CHAMPION } from '@/interfaces/champion';
 
 import axios from 'axios';
 

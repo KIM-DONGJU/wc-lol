@@ -55,14 +55,14 @@ import mid from '@/assets/images/icon/01-icon-01-lol-icon-position-mid.svg';
 import adc from '@/assets/images/icon/01-icon-01-lol-icon-position-bot.svg';
 import sup from '@/assets/images/icon/01-icon-01-lol-icon-position-sup.svg';
 
-const store = useChampions();
+const championsStore = useChampions();
 
-const filteredChampions = computed(() => store.filteredChampions);
-const selectedFilter = computed(() => store.selectedFilter);
-const searchChampion = computed(() => store.searchChampion);
+const filteredChampions = computed(() => championsStore.filteredChampions);
+const selectedFilter = computed(() => championsStore.selectedFilter);
+const searchChampion = computed(() => championsStore.searchChampion);
 
-const fetchChampionsData = () => store.fetchChampionsData();
-const filterChampions = (position: string) => store.filterChampions(position);
+const fetchChampionsData = () => championsStore.fetchChampionsData();
+const filterChampions = (position: string) => championsStore.filterChampions(position);
 
 const headerList = [
   { title: '전체', value: 'all' },
@@ -132,8 +132,8 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
     gap: 10px 20px;
-    margin-top: 20px;
     width: 100%;
+    margin-top: 20px;
 
     .champion__img {
       width: 75px;
