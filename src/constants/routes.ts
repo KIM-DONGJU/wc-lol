@@ -37,3 +37,8 @@ export const MATCH_HISTORY = {
   path: '/match-history',
   name: 'matchHistory',
 };
+
+export const CHAMPIONLIST = {
+  path: '/champion-list',
+  name: 'championList',
+};

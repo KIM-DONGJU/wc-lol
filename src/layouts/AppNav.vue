@@ -32,6 +32,7 @@ import { useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/useAuth';
 import {
+  CHAMPIONLIST,
   CREATE_MATCH,
   LOGIN,
   MEMBER_LIST,
@@ -63,6 +64,11 @@ const routes = [
     path: CREATE_MATCH.path,
     label: '대전 생성',
     name: CREATE_MATCH.name,
+  },
+  {
+    path: CHAMPIONLIST.path,
+    label: '롤 챔피언',
+    name: CHAMPIONLIST.name,
   },
 ];
 

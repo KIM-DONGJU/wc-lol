@@ -12,16 +12,22 @@
               prepend-inner-icon="mdi-lock"
               type="password"
             />
-            <!-- <v-btn
-                    @click="addUserShow"
-                    color="blue lighten-1 text-capitalize"
-                    depressed
-                    large
-                    block
-                    dark
+            <div class="login__infos">
+              <p>비밀번호를 잊으셨습니까?</p>
+              <div class="btns">
+                <router-link :to="SIGN_UP.path">
+                  <VBtn
+                    :color="styles.primary"
+                    :style="{ marginRight: '10px' }"
+                    size="small"
+                    variant="outlined"
                   >
-                    Sign Up
-                  </v-btn> -->
+                    회원가입
+                  </VBtn>
+                </router-link>
+                <VBtn :color="styles.primary" size="small" variant="outlined"> 로그인 </VBtn>
+              </div>
+            </div>
             <div id="G_OAuth_btn"></div>
           </form>
         </div>
@@ -31,8 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { supabase } from '@/supabase';
 import { onMounted, ref } from 'vue';
+
+import { SIGN_UP } from '@/constants/routes';
+import { supabase } from '@/supabase';
+
+import styles from '@/styles/_export.module.scss';
 
 const bindId = ref('');
 const bindPassword = ref('');
@@ -79,5 +89,20 @@ const onGoogleLoginSuccess = (googleUser: any) => {
   align-items: center;
   height: calc(100vh - 53px);
   min-height: 400px;
+
+  .login__infos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    p {
+      padding: 0 5px;
+      font-size: 15px;
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
 }
 </style>
