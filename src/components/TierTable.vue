@@ -48,13 +48,10 @@
           <img :src="getPositionImage(userTier.position)" />
         </p>
         <p>
-          <button @click="openChampionModal(userTier)">선택하기</button>
+          <button @click="selectMostChampions(userTier.id)">선택하기</button>
         </p>
       </div>
     </div>
-    <VDialog v-model="isModalOpen" max-width="1000">
-      <SelectMostChampions :user="selectedUser" @close="closeModal" />
-    </VDialog>
   </div>
 </template>
 
@@ -62,12 +59,10 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { USER_TIER } from '@/constants/routes';
+import { SELECTMOSTCHAMPION, USER_TIER } from '@/constants/routes';
 import { type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
-
-import SelectMostChampions from './SelectMostChampions.vue';
 
 import top from '@/assets/images/icon/01-icon-01-lol-icon-position-top.svg';
 import jungle from '@/assets/images/icon/01-icon-01-lol-icon-position-jng.svg';
@@ -108,23 +103,6 @@ const usersStore = useUsersStore();
 
 const searchInput = ref('');
 
-// 모달 관련 상태값
-const isModalOpen = ref(false); // 모달 열림/닫힘 상태
-const selectedUser = ref(usersStore.$id); // 선택된 유저 정보
-
-// 모달 열기
-const openChampionModal = (userTier: any) => {
-  selectedUser.value = userTier;
-  console.log(selectedUser);
-  isModalOpen.value = true;
-};
-
-// 모달 닫기
-const closeModal = (userTier: any) => {
-  isModalOpen.value = false;
-  selectedUser.value = userTier;
-};
-
 const groupMembers = computed(() => {
   const position = (router.currentRoute.value.params.position || 'all') as Position | 'all';
 
@@ -132,6 +110,7 @@ const groupMembers = computed(() => {
     .flatMap((groupMember) => {
       const member = [
         {
+          id: groupMember.id,
           nickname: groupMember.nickname,
           name: groupMember.name,
           position: groupMember.mainPosition,
@@ -143,6 +122,7 @@ const groupMembers = computed(() => {
 
       if (groupMember.subPosition) {
         member.push({
+          id: groupMember.id,
           nickname: groupMember.nickname,
           name: groupMember.name,
           position: groupMember.subPosition,
@@ -173,6 +153,15 @@ const groupMembers = computed(() => {
 
   return filterGroupMembers;
 });
+
+const selectMostChampions = (userId: number) => {
+  router.push({
+    name: SELECTMOSTCHAMPION.name,
+    params: {
+      id: userId,
+    },
+  });
+};
 
 const searchTierByLine = (position: string) => {
   router.push({

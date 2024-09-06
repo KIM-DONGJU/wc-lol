@@ -42,3 +42,8 @@ export const CHAMPIONLIST = {
   path: '/champion-list',
   name: 'championList',
 };
+
+export const SELECTMOSTCHAMPION = {
+  path: '/select-champions/:id',
+  name: 'selectMostChampions',
+};
