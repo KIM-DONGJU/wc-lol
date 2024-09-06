@@ -31,6 +31,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
 
@@ -38,14 +39,11 @@ const route = useRoute();
 const router = useRouter();
 const userId = route.params.id;
 
-// 포지션 타입 (주/부 포지션)
 const positionTypes = ref(['main']);
 const selectedPositionType = ref('main');
 
-// 선택된 포지션
 const selectedPosition = ref('');
 
-// 선택된 챔피언 목록 관리
 const selectedChampions = ref<string[]>([]);
 
 const championsStore = useChampions();
@@ -99,7 +97,6 @@ onMounted(() => {
 
 const confirmSelection = () => {
   console.log('선택된 챔피언:', selectedChampions.value);
-  // 필요한 처리 로직 추가 (예: 서버로 선택된 챔피언 전송)
 };
 
 const goBack = () => {
