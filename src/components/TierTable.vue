@@ -128,10 +128,6 @@ const headerList = [
 
 const usersStore = useUsersStore();
 
-const getChampionImage = (championKey: string) => {
-  return `https://ddragon.leagueoflegends.com/cdn/14.17.1/img/champion/${championKey}.png`;
-};
-
 const searchInput = ref('');
 
 const groupMembers = computed(() => {
@@ -214,6 +210,10 @@ const isSelectStyle = (position: string) => {
   }
 
   return router.currentRoute.value.params.position === position ? 'tier-header-selected' : '';
+};
+
+const getChampionImage = (championKey: string) => {
+  return `https://ddragon.leagueoflegends.com/cdn/14.17.1/img/champion/${championKey}.png`;
 };
 
 const getPositionImage = (position: string) => {
