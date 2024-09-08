@@ -3,27 +3,36 @@
     <VSelect
       v-model="selectedPositionType"
       :items="positionTypes"
-      label="포지션 선택"
+      label="주 라인 / 부 라인 선택 "
+      variant="outlined"
       width="100%"
     />
 
-    <VSelect v-model="selectedPosition" :items="filteredPositions" disabled width="100%" />
+    <VSelect
+      v-model="selectedPosition"
+      :items="filteredPositions"
+      variant="outlined"
+      width="100%"
+      disabled
+    />
 
     <div class="champion__list">
       <div v-for="champion in filteredChampions" :key="champion.id" class="champion__item">
         <img :alt="champion.name" :src="champion.image_url" class="champion__img" />
+        <p class="champion__name">{{ champion.name }}</p>
         <VCheckbox
-          v-model="selectedChampions"
+          v-model="currentSelectedChampions"
           :value="champion.id"
-          :label="champion.name"
           :disabled="isCheckboxDisabled(champion.id)"
+          hide-details
+          density="compact"
         />
       </div>
     </div>
 
     <div class="btns">
-      <v-btn :color="styles.primary" @click="confirmSelection">확인</v-btn>
-      <v-btn :color="styles.primary" @click="goBack">취소</v-btn>
+      <VBtn :color="styles.primary" @click="selectConfirm">확인</VBtn>
+      <VBtn :color="styles.primary" @click="goBack">취소</VBtn>
     </div>
   </div>
 </template>
@@ -44,10 +53,9 @@ const userId = route.params.id;
 
 const positionTypes = ref(['main']);
 const selectedPositionType = ref('main');
-
 const selectedPosition = ref('');
-
-const selectedChampions = ref<string[]>([]);
+const selectedChampionsMain = ref<string[]>([]);
+const selectedChampionsSub = ref<string[]>([]);
 
 const championsStore = useChampions();
 const usersStore = useUsersStore();
@@ -55,10 +63,6 @@ const usersStore = useUsersStore();
 const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
 );
-
-console.log('Current User:', currentUser.value);
-console.log('Main Position:', currentUser.value?.mainPosition);
-console.log('Sub Position:', currentUser.value?.subPosition);
 
 const filteredPositions = computed(() => {
   const positions: string[] = [];
@@ -93,6 +97,21 @@ onMounted(() => {
   }
 });
 
+const currentSelectedChampions = computed({
+  get() {
+    return selectedPositionType.value === 'main'
+      ? selectedChampionsMain.value
+      : selectedChampionsSub.value;
+  },
+  set(value) {
+    if (selectedPositionType.value === 'main') {
+      selectedChampionsMain.value = value;
+    } else {
+      selectedChampionsSub.value = value;
+    }
+  },
+});
+
 const filteredChampions = computed(() => {
   if (!currentUser.value || !selectedPosition.value) return [];
 
@@ -116,7 +135,7 @@ const filteredChampions = computed(() => {
 
 const isCheckboxDisabled = (championId: string) => {
   const isMain = selectedPositionType.value === 'main';
-  const selectedCount = selectedChampions.value.filter((id) => {
+  const selectedCount = currentSelectedChampions.value.filter((id) => {
     const champion = championsStore.champions.value.find((champ) => champ.id === id);
     const mainPosition = currentUser.value?.mainPosition || '';
     const subPosition = currentUser.value?.subPosition || '';
@@ -126,17 +145,17 @@ const isCheckboxDisabled = (championId: string) => {
       : champion?.position.includes(subPosition);
   }).length;
 
-  return selectedCount >= 3 && !selectedChampions.value.includes(championId);
+  return selectedCount >= 3 && !currentSelectedChampions.value.includes(championId);
 };
 
-const confirmSelection = async () => {
-  const mainSelected = selectedChampions.value.filter((id) => {
+const selectConfirm = async () => {
+  const mainSelected = selectedChampionsMain.value.filter((id) => {
     const champion = championsStore.champions.value.find((champ) => champ.id === id);
     const mainPosition = currentUser.value?.mainPosition || '';
     return champion?.position.includes(mainPosition);
   });
 
-  const subSelected = selectedChampions.value.filter((id) => {
+  const subSelected = selectedChampionsSub.value.filter((id) => {
     const champion = championsStore.champions.value.find((champ) => champ.id === id);
     const subPosition = currentUser.value?.subPosition || '';
     return champion?.position.includes(subPosition);
@@ -168,6 +187,8 @@ const confirmSelection = async () => {
     }
 
     console.log('데이터 업데이트 완료');
+
+    router.push('/user-tier/all');
   } catch (error) {
     console.error('데이터 업데이트 중 오류 발생:', error);
   }
@@ -192,6 +213,15 @@ const goBack = () => {
     grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
     gap: 10px;
     width: 100%;
+
+    .champion__name {
+      width: 100%;
+      overflow: hidden;
+      font-size: 14px;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .champion__item {

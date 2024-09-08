@@ -47,9 +47,36 @@
         <p>
           <img :src="getPositionImage(userTier.position)" />
         </p>
-        <p>
-          <button @click="selectMostChampions(userTier.id)">선택하기</button>
-        </p>
+        <div>
+          <div v-if="userTier.position === userTier.mainPosition" class="champion__images">
+            <img
+              v-for="(champion, idx) in userTier.mostChampionsMain || []"
+              :key="idx"
+              :src="getChampionImage(champion)"
+              alt="Main Champions"
+              class="champion__img"
+            />
+          </div>
+
+          <div v-if="userTier.position === userTier.subPosition" class="champion__images">
+            <img
+              v-for="(champion, idx) in userTier.mostChampionsSub || []"
+              :key="idx"
+              :src="getChampionImage(champion)"
+              alt="Sub Champions"
+              class="champion__img"
+            />
+          </div>
+
+          <div class="select__btn">
+            <button
+              v-if="!userTier.mostChampionsMain && !userTier.mostChampionsSub"
+              @click="selectMostChampions(userTier.id)"
+            >
+              선택하기
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -101,6 +128,10 @@ const headerList = [
 
 const usersStore = useUsersStore();
 
+const getChampionImage = (championKey: string) => {
+  return `https://ddragon.leagueoflegends.com/cdn/14.17.1/img/champion/${championKey}.png`;
+};
+
 const searchInput = ref('');
 
 const groupMembers = computed(() => {
@@ -117,6 +148,8 @@ const groupMembers = computed(() => {
           point: groupMember.positionScore[groupMember.mainPosition],
           mainPosition: groupMember.mainPosition,
           subPosition: groupMember.subPosition,
+          mostChampionsMain: groupMember.most_champions_main,
+          mostChampionsSub: groupMember.most_champions_sub,
         },
       ];
 
@@ -129,6 +162,8 @@ const groupMembers = computed(() => {
           point: groupMember.positionScore[groupMember.subPosition],
           mainPosition: groupMember.mainPosition,
           subPosition: groupMember.subPosition,
+          mostChampionsMain: groupMember.most_champions_main,
+          mostChampionsSub: groupMember.most_champions_sub,
         });
       }
 
@@ -277,6 +312,25 @@ const clearInput = () => {
         align-items: center;
         justify-content: center;
         font-size: 14px;
+      }
+
+      .champion__images {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+
+        .champion__img {
+          width: 25px;
+          height: 25px;
+          border-radius: 50%;
+        }
+      }
+
+      .select__btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
       }
     }
   }
