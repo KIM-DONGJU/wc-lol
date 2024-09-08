@@ -53,8 +53,10 @@ const router = useRouter();
 const userId = route.params.id;
 
 const positionTypes = ref(['main']);
+
 const selectedPositionType = ref('main');
 const selectedPosition = ref('');
+
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
 
