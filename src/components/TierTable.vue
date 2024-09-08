@@ -331,6 +331,10 @@ const clearInput = () => {
         align-items: center;
         justify-content: center;
         height: 100%;
+
+        button {
+          color: rgb(0 0 0 / 50%);
+        }
       }
     }
   }

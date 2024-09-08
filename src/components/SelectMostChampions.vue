@@ -44,6 +44,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
 import { supabase } from '@/supabase';
+import { USER_TIER } from '@/constants/routes';
 
 import styles from '@/styles/_export.module.scss';
 
@@ -54,6 +55,7 @@ const userId = route.params.id;
 const positionTypes = ref(['main']);
 const selectedPositionType = ref('main');
 const selectedPosition = ref('');
+
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
 
@@ -188,7 +190,14 @@ const selectConfirm = async () => {
 
     console.log('데이터 업데이트 완료');
 
-    router.push('/user-tier/all');
+    router.push({
+      name: USER_TIER.name,
+      params: { position: 'all' },
+      query: {
+        mainChampion: JSON.stringify(mainSelected),
+        subChampion: JSON.stringify(subSelected),
+      },
+    });
   } catch (error) {
     console.error('데이터 업데이트 중 오류 발생:', error);
   }
