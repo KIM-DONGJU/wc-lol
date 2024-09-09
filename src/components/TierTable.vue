@@ -47,6 +47,7 @@
         <p>
           <img :src="getPositionImage(userTier.position)" />
         </p>
+
         <div>
           <div v-if="userTier.position === userTier.mainPosition" class="champion__images">
             <img
@@ -58,6 +59,7 @@
             />
           </div>
 
+          <!-- 부 포지션 챔피언들 -->
           <div v-if="userTier.position === userTier.subPosition" class="champion__images">
             <img
               v-for="(champion, idx) in userTier.mostChampionsSub || []"
@@ -67,13 +69,19 @@
               class="champion__img"
             />
           </div>
-
           <div class="select__btn">
             <button
-              v-if="!userTier.mostChampionsMain && !userTier.mostChampionsSub"
-              @click="selectMostChampions(userTier.id)"
+              v-if="userTier.position === userTier.mainPosition && !userTier.mostChampionsMain"
+              @click="selectMostChampions(userTier.id, 'main')"
             >
-              선택하기
+              주 포지션
+            </button>
+
+            <button
+              v-if="userTier.position === userTier.subPosition && !userTier.mostChampionsSub"
+              @click="selectMostChampions(userTier.id, 'sub')"
+            >
+              부 포지션
             </button>
           </div>
         </div>
@@ -185,11 +193,12 @@ const groupMembers = computed(() => {
   return filterGroupMembers;
 });
 
-const selectMostChampions = (userId: number) => {
+const selectMostChampions = (userId: number, selectedPositionType: 'main' | 'sub') => {
   router.push({
     name: SELECTMOSTCHAMPION.name,
     params: {
       id: userId,
+      positionType: selectedPositionType,
     },
   });
 };

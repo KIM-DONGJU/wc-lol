@@ -1,20 +1,18 @@
 <template>
   <div class="container">
-    <VSelect
-      v-model="selectedPositionType"
-      :items="positionTypes"
-      label="주 라인 / 부 라인 선택 "
-      variant="outlined"
-      width="100%"
-    />
-
-    <VSelect
-      v-model="selectedPosition"
-      :items="filteredPositions"
-      variant="outlined"
-      width="100%"
-      disabled
-    />
+    <div class="champion__search">
+      <!-- 검색 입력 필드 -->
+      <v-text-field
+        v-model="searchChampion.value"
+        :base-color="styles.primary"
+        :color="styles.primary"
+        placeholder="챔피언 이름을 입력하세요"
+        density="compact"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        @input="filterChampions(selectedFilter.value)"
+      />
+    </div>
 
     <div class="champion__list">
       <div v-for="champion in filteredChampions" :key="champion.id" class="champion__item">
@@ -31,34 +29,32 @@
     </div>
 
     <div class="btns">
-      <VBtn :color="styles.primary" @click="selectConfirm">확인</VBtn>
       <VBtn :color="styles.primary" @click="goBack">취소</VBtn>
+      <VBtn :color="styles.primary" @click="selectConfirm">확인</VBtn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
 
 import { supabase } from '@/supabase';
-
 import styles from '@/styles/_export.module.scss';
 
 const route = useRoute();
 const router = useRouter();
 const userId = route.params.id;
 
-const positionTypes = ref(['main']);
+const positionType = route.params.positionType as 'main' | 'sub';
 
-const selectedPositionType = ref('main');
-const selectedPosition = ref('');
-
+const selectedFilter = computed(() => championsStore.selectedFilter);
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
+const searchChampion = computed(() => championsStore.searchChampion);
 
 const championsStore = useChampions();
 const usersStore = useUsersStore();
@@ -67,44 +63,14 @@ const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
 );
 
-const filteredPositions = computed(() => {
-  const positions: string[] = [];
-  if (currentUser.value?.mainPosition) positions.push(currentUser.value.mainPosition);
-  if (
-    currentUser.value?.subPosition &&
-    currentUser.value.subPosition !== currentUser.value.mainPosition
-  ) {
-    positions.push(currentUser.value.subPosition);
-  }
-  return positions;
-});
-
-watch(selectedPositionType, (newType) => {
-  if (newType === 'main') {
-    selectedPosition.value = currentUser.value?.mainPosition || '';
-  } else if (newType === 'sub' && currentUser.value?.subPosition) {
-    selectedPosition.value = currentUser.value.subPosition;
-  }
-});
-
-onMounted(() => {
-  championsStore.fetchChampionsData();
-  selectedPosition.value = currentUser.value?.mainPosition || '';
-  if (currentUser.value?.subPosition) {
-    positionTypes.value = ['main', 'sub'];
-  } else {
-    positionTypes.value = ['main'];
-  }
-});
+const filterChampions = (position: string) => championsStore.filterChampions(position);
 
 const currentSelectedChampions = computed({
   get() {
-    return selectedPositionType.value === 'main'
-      ? selectedChampionsMain.value
-      : selectedChampionsSub.value;
+    return positionType === 'main' ? selectedChampionsMain.value : selectedChampionsSub.value;
   },
   set(value) {
-    if (selectedPositionType.value === 'main') {
+    if (positionType === 'main') {
       selectedChampionsMain.value = value;
     } else {
       selectedChampionsSub.value = value;
@@ -113,82 +79,83 @@ const currentSelectedChampions = computed({
 });
 
 const filteredChampions = computed(() => {
-  if (!currentUser.value || !selectedPosition.value) return [];
-  if (selectedPositionType.value === 'main') {
-    return championsStore.champions.value.filter((champion: any) =>
-      champion.position.includes(currentUser.value?.mainPosition)
-    );
-  }
-  if (
-    selectedPositionType.value === 'sub' &&
-    currentUser.value?.subPosition !== currentUser.value?.mainPosition
-  ) {
-    return championsStore.champions.value.filter((champion: any) =>
-      champion.position.includes(currentUser.value?.subPosition)
-    );
-  }
-  return [];
+  if (!currentUser.value) return [];
+  return championsStore.champions.value;
 });
 
 const isCheckboxDisabled = (championId: string) => {
-  const isMain = selectedPositionType.value === 'main';
-  const selectedCount = currentSelectedChampions.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const mainPosition = currentUser.value?.mainPosition || '';
-    const subPosition = currentUser.value?.subPosition || '';
-    return isMain
-      ? champion?.position.includes(mainPosition)
-      : champion?.position.includes(subPosition);
-  }).length;
+  const selectedCount = currentSelectedChampions.value.length;
   return selectedCount >= 3 && !currentSelectedChampions.value.includes(championId);
 };
 
 const selectConfirm = async () => {
-  const mainSelected = selectedChampionsMain.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const mainPosition = currentUser.value?.mainPosition || '';
-    return champion?.position.includes(mainPosition);
-  });
-
-  const subSelected = selectedChampionsSub.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const subPosition = currentUser.value?.subPosition || '';
-    return champion?.position.includes(subPosition);
-  });
-
   try {
-    const { data: mainData, error: mainError } = await supabase
-      .from('groupmembers')
-      .update({
-        most_champions_main: mainSelected.length > 0 ? mainSelected : null,
-      })
-      .eq('id', currentUser.value?.id);
-    if (mainError) {
-      console.error('Main position update error:', mainError.message);
-      return;
+    if (positionType === 'main') {
+      const { data: mainData, error: mainError } = await supabase
+        .from('groupmembers')
+        .update({
+          most_champions_main:
+            selectedChampionsMain.value.length > 0 ? selectedChampionsMain.value : null,
+        })
+        .eq('id', currentUser.value?.id)
+        .select();
+
+      if (mainError) {
+        console.error('주 포지션 저장 오류:', mainError.message);
+        return;
+      }
+
+      if (mainData && mainData.length > 0) {
+        usersStore.updateGroupMember(mainData[0]);
+        console.log('주 포지션 저장 완료:', mainData);
+      } else {
+        console.log('주 포지션 저장 후 데이터 없음.');
+      }
     }
 
-    const { data: subData, error: subError } = await supabase
-      .from('groupmembers')
-      .update({
-        most_champions_sub: subSelected.length > 0 ? subSelected : null,
-      })
-      .eq('id', currentUser.value?.id);
-    if (subError) {
-      console.error('Sub position update error:', subError.message);
-      return;
+    if (positionType === 'sub') {
+      const { data: subData, error: subError } = await supabase
+        .from('groupmembers')
+        .update({
+          most_champions_sub:
+            selectedChampionsSub.value.length > 0 ? selectedChampionsSub.value : null,
+        })
+        .eq('id', currentUser.value?.id)
+        .select();
+
+      if (subError) {
+        console.error('부 포지션 저장 오류:', subError.message);
+        return;
+      }
+
+      if (subData && subData.length > 0) {
+        usersStore.updateGroupMember(subData[0]);
+        console.log('부 포지션 저장 완료:', subData);
+      } else {
+        console.log('부 포지션 저장 후 데이터 없음.');
+      }
     }
 
-    console.log('데이터 업데이트 완료');
     router.push('/user-tier/all');
   } catch (error) {
-    console.error('데이터 업데이트 중 오류 발생:', error);
+    console.error('저장 중 오류 발생:', error);
   }
 };
 
+// 취소 버튼
 const goBack = () => {
   router.back();
 };
+
+onMounted(() => {
+  championsStore.fetchChampionsData();
+
+  if (positionType === 'main') {
+    selectedChampionsMain.value = currentUser.value?.most_champions_main || [];
+  } else if (positionType === 'sub') {
+    selectedChampionsSub.value = currentUser.value?.most_champions_sub || [];
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -199,6 +166,10 @@ const goBack = () => {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+
+  .champion__search {
+    width: 100%;
+  }
 
   .champion__list {
     display: grid;
