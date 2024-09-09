@@ -1,16 +1,14 @@
 <template>
   <div class="container">
     <div class="champion__search">
-      <!-- 검색 입력 필드 -->
       <v-text-field
-        v-model="searchChampion.value"
+        v-model="searchChampion"
         :base-color="styles.primary"
         :color="styles.primary"
         placeholder="챔피언 이름을 입력하세요"
         density="compact"
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
-        @input="filterChampions(selectedFilter.value)"
       />
     </div>
 
@@ -43,6 +41,7 @@ import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
 
 import { supabase } from '@/supabase';
+
 import styles from '@/styles/_export.module.scss';
 
 const route = useRoute();
@@ -51,10 +50,10 @@ const userId = route.params.id;
 
 const positionType = route.params.positionType as 'main' | 'sub';
 
-const selectedFilter = computed(() => championsStore.selectedFilter);
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
-const searchChampion = computed(() => championsStore.searchChampion);
+
+const searchChampion = ref('');
 
 const championsStore = useChampions();
 const usersStore = useUsersStore();
@@ -62,8 +61,6 @@ const usersStore = useUsersStore();
 const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
 );
-
-const filterChampions = (position: string) => championsStore.filterChampions(position);
 
 const currentSelectedChampions = computed({
   get() {
@@ -80,7 +77,11 @@ const currentSelectedChampions = computed({
 
 const filteredChampions = computed(() => {
   if (!currentUser.value) return [];
-  return championsStore.champions.value;
+
+  const search = searchChampion.value.toLowerCase();
+  return championsStore.champions.value.filter((champion: any) =>
+    champion.name.toLowerCase().includes(search)
+  );
 });
 
 const isCheckboxDisabled = (championId: string) => {
@@ -89,6 +90,10 @@ const isCheckboxDisabled = (championId: string) => {
 };
 
 const selectConfirm = async () => {
+  if (currentSelectedChampions.value.length < 3) {
+    alert('3개의 챔피언을 선택하세요.');
+    return;
+  }
   try {
     if (positionType === 'main') {
       const { data: mainData, error: mainError } = await supabase
@@ -107,7 +112,6 @@ const selectConfirm = async () => {
 
       if (mainData && mainData.length > 0) {
         usersStore.updateGroupMember(mainData[0]);
-        console.log('주 포지션 저장 완료:', mainData);
       } else {
         console.log('주 포지션 저장 후 데이터 없음.');
       }
@@ -130,7 +134,6 @@ const selectConfirm = async () => {
 
       if (subData && subData.length > 0) {
         usersStore.updateGroupMember(subData[0]);
-        console.log('부 포지션 저장 완료:', subData);
       } else {
         console.log('부 포지션 저장 후 데이터 없음.');
       }
@@ -142,7 +145,6 @@ const selectConfirm = async () => {
   }
 };
 
-// 취소 버튼
 const goBack = () => {
   router.back();
 };
