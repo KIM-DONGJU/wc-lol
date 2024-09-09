@@ -40,23 +40,32 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
+
 import { supabase } from '@/supabase';
+
 import styles from '@/styles/_export.module.scss';
+
 const route = useRoute();
 const router = useRouter();
 const userId = route.params.id;
+
 const positionTypes = ref(['main']);
+
 const selectedPositionType = ref('main');
 const selectedPosition = ref('');
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
+
 const championsStore = useChampions();
 const usersStore = useUsersStore();
+
 const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
 );
+
 const filteredPositions = computed(() => {
   const positions: string[] = [];
   if (currentUser.value?.mainPosition) positions.push(currentUser.value.mainPosition);
@@ -68,6 +77,7 @@ const filteredPositions = computed(() => {
   }
   return positions;
 });
+
 watch(selectedPositionType, (newType) => {
   if (newType === 'main') {
     selectedPosition.value = currentUser.value?.mainPosition || '';
@@ -75,15 +85,7 @@ watch(selectedPositionType, (newType) => {
     selectedPosition.value = currentUser.value.subPosition;
   }
 });
-onMounted(() => {
-  championsStore.fetchChampionsData();
-  selectedPosition.value = currentUser.value?.mainPosition || '';
-  if (currentUser.value?.subPosition) {
-    positionTypes.value = ['main', 'sub'];
-  } else {
-    positionTypes.value = ['main'];
-  }
-});
+
 const currentSelectedChampions = computed({
   get() {
     return selectedPositionType.value === 'main'
@@ -98,13 +100,16 @@ const currentSelectedChampions = computed({
     }
   },
 });
+
 const filteredChampions = computed(() => {
   if (!currentUser.value || !selectedPosition.value) return [];
+
   if (selectedPositionType.value === 'main') {
     return championsStore.champions.value.filter((champion: any) =>
       champion.position.includes(currentUser.value?.mainPosition)
     );
   }
+
   if (
     selectedPositionType.value === 'sub' &&
     currentUser.value?.subPosition !== currentUser.value?.mainPosition
@@ -115,6 +120,7 @@ const filteredChampions = computed(() => {
   }
   return [];
 });
+
 const isCheckboxDisabled = (championId: string) => {
   const isMain = selectedPositionType.value === 'main';
   const selectedCount = currentSelectedChampions.value.filter((id) => {
@@ -133,11 +139,13 @@ const selectConfirm = async () => {
     const mainPosition = currentUser.value?.mainPosition || '';
     return champion?.position.includes(mainPosition);
   });
+
   const subSelected = selectedChampionsSub.value.filter((id) => {
     const champion = championsStore.champions.value.find((champ) => champ.id === id);
     const subPosition = currentUser.value?.subPosition || '';
     return champion?.position.includes(subPosition);
   });
+
   try {
     const { data: mainData, error: mainError } = await supabase
       .from('groupmembers')
@@ -149,6 +157,7 @@ const selectConfirm = async () => {
       console.error('Main position update error:', mainError.message);
       return;
     }
+
     const { data: subData, error: subError } = await supabase
       .from('groupmembers')
       .update({
@@ -159,15 +168,27 @@ const selectConfirm = async () => {
       console.error('Sub position update error:', subError.message);
       return;
     }
+
     console.log('데이터 업데이트 완료');
     router.push('/user-tier/all');
   } catch (error) {
     console.error('데이터 업데이트 중 오류 발생:', error);
   }
 };
+
 const goBack = () => {
   router.back();
 };
+
+onMounted(() => {
+  championsStore.fetchChampionsData();
+  selectedPosition.value = currentUser.value?.mainPosition || '';
+  if (currentUser.value?.subPosition) {
+    positionTypes.value = ['main', 'sub'];
+  } else {
+    positionTypes.value = ['main'];
+  }
+});
 </script>
 
 <style lang="scss" scoped>
