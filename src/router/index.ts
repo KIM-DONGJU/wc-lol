@@ -4,6 +4,7 @@ import {
   LOGIN,
   MEMBER_LIST,
   NOT_FOUND,
+  SELECTMOSTCHAMPION,
   SIGN_UP,
   USER_DETAIL,
   USER_TIER,
@@ -39,7 +40,11 @@ const router = createRouter({
       name: SIGN_UP.name,
       component: () => import('@/views/SignUpView.vue'),
     },
-
+    {
+      path: '/select-most-champions/:id/:positionType',
+      name: SELECTMOSTCHAMPION.name,
+      component: () => import('@/components/SelectMostChampions.vue'),
+    },
     {
       path: LOGIN.path,
       name: LOGIN.name,

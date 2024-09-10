@@ -47,9 +47,49 @@
         <p>
           <img :src="getPositionImage(userTier.position)" />
         </p>
-        <p>
-          <!-- {{ userTier.mostChampion }} -->
-        </p>
+
+        <div>
+          <div
+            v-if="userTier.position === userTier.mainPosition && userTier.mostChampionsMain?.length"
+            class="champion__images"
+          >
+            <img
+              v-for="(champion, idx) in userTier.mostChampionsMain || []"
+              :key="idx"
+              :src="getChampionImage(champion)"
+              alt="Main Champions"
+              class="champion__img"
+            />
+          </div>
+
+          <div
+            v-else-if="
+              userTier.position === userTier.subPosition && userTier.mostChampionsSub?.length
+            "
+            class="champion__images"
+          >
+            <img
+              v-for="(champion, idx) in userTier.mostChampionsSub || []"
+              :key="idx"
+              :src="getChampionImage(champion)"
+              alt="Sub Champions"
+              class="champion__img"
+            />
+          </div>
+
+          <div v-else class="select__btn">
+            <button
+              @click="
+                selectMostChampions(
+                  userTier.id,
+                  userTier.position === userTier.mainPosition ? 'main' : 'sub'
+                )
+              "
+            >
+              선택하기
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -59,7 +99,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { USER_TIER } from '@/constants/routes';
+import { SELECTMOSTCHAMPION, USER_TIER } from '@/constants/routes';
 import { type Position, useUsersStore } from '@/stores/useUsers';
 
 import styles from '@/styles/_export.module.scss';
@@ -110,23 +150,29 @@ const groupMembers = computed(() => {
     .flatMap((groupMember) => {
       const member = [
         {
+          id: groupMember.id,
           nickname: groupMember.nickname,
           name: groupMember.name,
           position: groupMember.mainPosition,
           point: groupMember.positionScore[groupMember.mainPosition],
           mainPosition: groupMember.mainPosition,
           subPosition: groupMember.subPosition,
+          mostChampionsMain: groupMember.most_champions_main,
+          mostChampionsSub: groupMember.most_champions_sub,
         },
       ];
 
       if (groupMember.subPosition) {
         member.push({
+          id: groupMember.id,
           nickname: groupMember.nickname,
           name: groupMember.name,
           position: groupMember.subPosition,
           point: groupMember.positionScore[groupMember.subPosition],
           mainPosition: groupMember.mainPosition,
           subPosition: groupMember.subPosition,
+          mostChampionsMain: groupMember.most_champions_main,
+          mostChampionsSub: groupMember.most_champions_sub,
         });
       }
 
@@ -152,6 +198,16 @@ const groupMembers = computed(() => {
   return filterGroupMembers;
 });
 
+const selectMostChampions = (userId: number, selectedPositionType: 'main' | 'sub') => {
+  router.push({
+    name: SELECTMOSTCHAMPION.name,
+    params: {
+      id: userId,
+      positionType: selectedPositionType,
+    },
+  });
+};
+
 const searchTierByLine = (position: string) => {
   router.push({
     name: USER_TIER.name,
@@ -168,6 +224,10 @@ const isSelectStyle = (position: string) => {
   }
 
   return router.currentRoute.value.params.position === position ? 'tier-header-selected' : '';
+};
+
+const getChampionImage = (championKey: string) => {
+  return `https://ddragon.leagueoflegends.com/cdn/14.17.1/img/champion/${championKey}.png`;
 };
 
 const getPositionImage = (position: string) => {
@@ -266,6 +326,29 @@ const clearInput = () => {
         align-items: center;
         justify-content: center;
         font-size: 14px;
+      }
+
+      .champion__images {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+
+        .champion__img {
+          width: 25px;
+          height: 25px;
+          border-radius: 50%;
+        }
+      }
+
+      .select__btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+
+        button {
+          color: rgb(0 0 0 / 50%);
+        }
       }
     }
   }
