@@ -13,7 +13,7 @@
     </div>
 
     <div class="champion__list">
-      <div v-for="champion in allChampions" :key="champion.id" class="champion__item">
+      <label v-for="champion in allChampions" :key="champion.id" class="champion__item">
         <img :alt="champion.name" :src="champion.image_url" class="champion__img" />
         <p class="champion__name">{{ champion.name }}</p>
         <VCheckbox
@@ -23,7 +23,7 @@
           hide-details
           density="compact"
         />
-      </div>
+      </label>
     </div>
 
     <div class="btns">
