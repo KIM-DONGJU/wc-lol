@@ -39,6 +39,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useChampions } from '@/stores/useChampion';
 import { useUsersStore } from '@/stores/useUsers';
+import { useCommonStore } from '@/stores/useCommon';
 
 import { supabase } from '@/supabase';
 
@@ -57,6 +58,7 @@ const searchChampion = ref('');
 
 const championsStore = useChampions();
 const usersStore = useUsersStore();
+const commonStore = useCommonStore();
 
 const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
@@ -112,6 +114,7 @@ const selectConfirm = async () => {
 
       if (mainData && mainData.length > 0) {
         usersStore.updateGroupMember(mainData[0]);
+        commonStore.showToast({ message: '주 포지션 챔피언 선택을 완료하였습니다.' });
       } else {
         console.log('주 포지션 저장 후 데이터 없음.');
       }
@@ -134,6 +137,7 @@ const selectConfirm = async () => {
 
       if (subData && subData.length > 0) {
         usersStore.updateGroupMember(subData[0]);
+        commonStore.showToast({ message: '부 포지션 챔피언 선택을 완료하였습니다.' });
       } else {
         console.log('부 포지션 저장 후 데이터 없음.');
       }

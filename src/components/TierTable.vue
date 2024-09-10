@@ -54,7 +54,7 @@
             class="champion__images"
           >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsMain"
+              v-for="(champion, idx) in userTier.mostChampionsMain || []"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Main Champions"
@@ -69,7 +69,7 @@
             class="champion__images"
           >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsSub"
+              v-for="(champion, idx) in userTier.mostChampionsSub || []"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Sub Champions"
@@ -79,15 +79,12 @@
 
           <div v-else class="select__btn">
             <button
-              v-if="userTier.position === userTier.mainPosition && !userTier.mostChampionsMain"
-              @click="selectMostChampions(userTier.id, 'main')"
-            >
-              선택하기
-            </button>
-
-            <button
-              v-if="userTier.position === userTier.subPosition && !userTier.mostChampionsSub"
-              @click="selectMostChampions(userTier.id, 'sub')"
+              @click="
+                selectMostChampions(
+                  userTier.id,
+                  userTier.position === userTier.mainPosition ? 'main' : 'sub'
+                )
+              "
             >
               선택하기
             </button>
