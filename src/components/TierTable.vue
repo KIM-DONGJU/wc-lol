@@ -49,9 +49,12 @@
         </p>
 
         <div>
-          <div v-if="userTier.position === userTier.mainPosition" class="champion__images">
+          <div
+            v-if="userTier.position === userTier.mainPosition && userTier.mostChampionsMain?.length"
+            class="champion__images"
+          >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsMain || []"
+              v-for="(champion, idx) in userTier.mostChampionsMain"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Main Champions"
@@ -59,17 +62,22 @@
             />
           </div>
 
-          <!-- 부 포지션 챔피언들 -->
-          <div v-if="userTier.position === userTier.subPosition" class="champion__images">
+          <div
+            v-else-if="
+              userTier.position === userTier.subPosition && userTier.mostChampionsSub?.length
+            "
+            class="champion__images"
+          >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsSub || []"
+              v-for="(champion, idx) in userTier.mostChampionsSub"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Sub Champions"
               class="champion__img"
             />
           </div>
-          <div class="select__btn">
+
+          <div v-else class="select__btn">
             <button
               v-if="userTier.position === userTier.mainPosition && !userTier.mostChampionsMain"
               @click="selectMostChampions(userTier.id, 'main')"
