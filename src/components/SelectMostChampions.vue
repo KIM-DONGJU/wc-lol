@@ -13,7 +13,7 @@
     </div>
 
     <div class="champion__list">
-      <div v-for="champion in filteredChampions" :key="champion.id" class="champion__item">
+      <div v-for="champion in allChampions" :key="champion.id" class="champion__item">
         <img :alt="champion.name" :src="champion.image_url" class="champion__img" />
         <p class="champion__name">{{ champion.name }}</p>
         <VCheckbox
@@ -75,7 +75,7 @@ const currentSelectedChampions = computed({
   },
 });
 
-const filteredChampions = computed(() => {
+const allChampions = computed(() => {
   if (!currentUser.value) return [];
 
   const search = searchChampion.value.toLowerCase();
