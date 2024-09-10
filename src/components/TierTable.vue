@@ -74,14 +74,14 @@
               v-if="userTier.position === userTier.mainPosition && !userTier.mostChampionsMain"
               @click="selectMostChampions(userTier.id, 'main')"
             >
-              주 포지션
+              선택하기
             </button>
 
             <button
               v-if="userTier.position === userTier.subPosition && !userTier.mostChampionsSub"
               @click="selectMostChampions(userTier.id, 'sub')"
             >
-              부 포지션
+              선택하기
             </button>
           </div>
         </div>
