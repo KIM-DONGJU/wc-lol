@@ -41,7 +41,7 @@ const router = createRouter({
       component: () => import('@/views/SignUpView.vue'),
     },
     {
-      path: SELECTMOSTCHAMPION.path,
+      path: '/select-most-champions/:id/:positionType',
       name: SELECTMOSTCHAMPION.name,
       component: () => import('@/components/SelectMostChampions.vue'),
     },

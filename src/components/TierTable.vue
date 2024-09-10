@@ -47,10 +47,14 @@
         <p>
           <img :src="getPositionImage(userTier.position)" />
         </p>
+
         <div>
-          <div v-if="userTier.position === userTier.mainPosition" class="champion__images">
+          <div
+            v-if="userTier.position === userTier.mainPosition && userTier.mostChampionsMain?.length"
+            class="champion__images"
+          >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsMain || []"
+              v-for="(champion, idx) in userTier.mostChampionsMain"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Main Champions"
@@ -58,9 +62,14 @@
             />
           </div>
 
-          <div v-if="userTier.position === userTier.subPosition" class="champion__images">
+          <div
+            v-else-if="
+              userTier.position === userTier.subPosition && userTier.mostChampionsSub?.length
+            "
+            class="champion__images"
+          >
             <img
-              v-for="(champion, idx) in userTier.mostChampionsSub || []"
+              v-for="(champion, idx) in userTier.mostChampionsSub"
               :key="idx"
               :src="getChampionImage(champion)"
               alt="Sub Champions"
@@ -68,10 +77,17 @@
             />
           </div>
 
-          <div class="select__btn">
+          <div v-else class="select__btn">
             <button
-              v-if="!userTier.mostChampionsMain && !userTier.mostChampionsSub"
-              @click="selectMostChampions(userTier.id)"
+              v-if="userTier.position === userTier.mainPosition && !userTier.mostChampionsMain"
+              @click="selectMostChampions(userTier.id, 'main')"
+            >
+              선택하기
+            </button>
+
+            <button
+              v-if="userTier.position === userTier.subPosition && !userTier.mostChampionsSub"
+              @click="selectMostChampions(userTier.id, 'sub')"
             >
               선택하기
             </button>
@@ -185,11 +201,12 @@ const groupMembers = computed(() => {
   return filterGroupMembers;
 });
 
-const selectMostChampions = (userId: number) => {
+const selectMostChampions = (userId: number, selectedPositionType: 'main' | 'sub') => {
   router.push({
     name: SELECTMOSTCHAMPION.name,
     params: {
       id: userId,
+      positionType: selectedPositionType,
     },
   });
 };

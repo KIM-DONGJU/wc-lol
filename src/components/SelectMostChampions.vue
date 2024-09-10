@@ -1,23 +1,19 @@
 <template>
   <div class="container">
-    <VSelect
-      v-model="selectedPositionType"
-      :items="positionTypes"
-      label="주 라인 / 부 라인 선택 "
-      variant="outlined"
-      width="100%"
-    />
-
-    <VSelect
-      v-model="selectedPosition"
-      :items="filteredPositions"
-      variant="outlined"
-      width="100%"
-      disabled
-    />
+    <div class="champion__search">
+      <v-text-field
+        v-model="searchChampion"
+        :base-color="styles.primary"
+        :color="styles.primary"
+        placeholder="챔피언 이름을 입력하세요"
+        density="compact"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+      />
+    </div>
 
     <div class="champion__list">
-      <div v-for="champion in filteredChampions" :key="champion.id" class="champion__item">
+      <label v-for="champion in allChampions" :key="champion.id" class="champion__item">
         <img :alt="champion.name" :src="champion.image_url" class="champion__img" />
         <p class="champion__name">{{ champion.name }}</p>
         <VCheckbox
@@ -27,18 +23,18 @@
           hide-details
           density="compact"
         />
-      </div>
+      </label>
     </div>
 
     <div class="btns">
-      <VBtn :color="styles.primary" @click="selectConfirm">확인</VBtn>
       <VBtn :color="styles.primary" @click="goBack">취소</VBtn>
+      <VBtn :color="styles.primary" @click="selectConfirm">확인</VBtn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useChampions } from '@/stores/useChampion';
@@ -52,12 +48,12 @@ const route = useRoute();
 const router = useRouter();
 const userId = route.params.id;
 
-const positionTypes = ref(['main']);
+const positionType = route.params.positionType as 'main' | 'sub';
 
-const selectedPositionType = ref('main');
-const selectedPosition = ref('');
 const selectedChampionsMain = ref<string[]>([]);
 const selectedChampionsSub = ref<string[]>([]);
+
+const searchChampion = ref('');
 
 const championsStore = useChampions();
 const usersStore = useUsersStore();
@@ -66,34 +62,12 @@ const currentUser = computed(() =>
   usersStore.groupMembers.find((member) => member.id === Number(userId))
 );
 
-const filteredPositions = computed(() => {
-  const positions: string[] = [];
-  if (currentUser.value?.mainPosition) positions.push(currentUser.value.mainPosition);
-  if (
-    currentUser.value?.subPosition &&
-    currentUser.value.subPosition !== currentUser.value.mainPosition
-  ) {
-    positions.push(currentUser.value.subPosition);
-  }
-  return positions;
-});
-
-watch(selectedPositionType, (newType) => {
-  if (newType === 'main') {
-    selectedPosition.value = currentUser.value?.mainPosition || '';
-  } else if (newType === 'sub' && currentUser.value?.subPosition) {
-    selectedPosition.value = currentUser.value.subPosition;
-  }
-});
-
 const currentSelectedChampions = computed({
   get() {
-    return selectedPositionType.value === 'main'
-      ? selectedChampionsMain.value
-      : selectedChampionsSub.value;
+    return positionType === 'main' ? selectedChampionsMain.value : selectedChampionsSub.value;
   },
   set(value) {
-    if (selectedPositionType.value === 'main') {
+    if (positionType === 'main') {
       selectedChampionsMain.value = value;
     } else {
       selectedChampionsSub.value = value;
@@ -101,78 +75,73 @@ const currentSelectedChampions = computed({
   },
 });
 
-const filteredChampions = computed(() => {
-  if (!currentUser.value || !selectedPosition.value) return [];
+const allChampions = computed(() => {
+  if (!currentUser.value) return [];
 
-  if (selectedPositionType.value === 'main') {
-    return championsStore.champions.value.filter((champion: any) =>
-      champion.position.includes(currentUser.value?.mainPosition)
-    );
-  }
-
-  if (
-    selectedPositionType.value === 'sub' &&
-    currentUser.value?.subPosition !== currentUser.value?.mainPosition
-  ) {
-    return championsStore.champions.value.filter((champion: any) =>
-      champion.position.includes(currentUser.value?.subPosition)
-    );
-  }
-  return [];
+  const search = searchChampion.value.toLowerCase();
+  return championsStore.champions.value.filter((champion: any) =>
+    champion.name.toLowerCase().includes(search)
+  );
 });
 
 const isCheckboxDisabled = (championId: string) => {
-  const isMain = selectedPositionType.value === 'main';
-  const selectedCount = currentSelectedChampions.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const mainPosition = currentUser.value?.mainPosition || '';
-    const subPosition = currentUser.value?.subPosition || '';
-    return isMain
-      ? champion?.position.includes(mainPosition)
-      : champion?.position.includes(subPosition);
-  }).length;
+  const selectedCount = currentSelectedChampions.value.length;
   return selectedCount >= 3 && !currentSelectedChampions.value.includes(championId);
 };
+
 const selectConfirm = async () => {
-  const mainSelected = selectedChampionsMain.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const mainPosition = currentUser.value?.mainPosition || '';
-    return champion?.position.includes(mainPosition);
-  });
-
-  const subSelected = selectedChampionsSub.value.filter((id) => {
-    const champion = championsStore.champions.value.find((champ) => champ.id === id);
-    const subPosition = currentUser.value?.subPosition || '';
-    return champion?.position.includes(subPosition);
-  });
-
+  if (currentSelectedChampions.value.length < 3) {
+    alert('3개의 챔피언을 선택하세요.');
+    return;
+  }
   try {
-    const { data: mainData, error: mainError } = await supabase
-      .from('groupmembers')
-      .update({
-        most_champions_main: mainSelected.length > 0 ? mainSelected : null,
-      })
-      .eq('id', currentUser.value?.id);
-    if (mainError) {
-      console.error('Main position update error:', mainError.message);
-      return;
+    if (positionType === 'main') {
+      const { data: mainData, error: mainError } = await supabase
+        .from('groupmembers')
+        .update({
+          most_champions_main:
+            selectedChampionsMain.value.length > 0 ? selectedChampionsMain.value : null,
+        })
+        .eq('id', currentUser.value?.id)
+        .select();
+
+      if (mainError) {
+        console.error('주 포지션 저장 오류:', mainError.message);
+        return;
+      }
+
+      if (mainData && mainData.length > 0) {
+        usersStore.updateGroupMember(mainData[0]);
+      } else {
+        console.log('주 포지션 저장 후 데이터 없음.');
+      }
     }
 
-    const { data: subData, error: subError } = await supabase
-      .from('groupmembers')
-      .update({
-        most_champions_sub: subSelected.length > 0 ? subSelected : null,
-      })
-      .eq('id', currentUser.value?.id);
-    if (subError) {
-      console.error('Sub position update error:', subError.message);
-      return;
+    if (positionType === 'sub') {
+      const { data: subData, error: subError } = await supabase
+        .from('groupmembers')
+        .update({
+          most_champions_sub:
+            selectedChampionsSub.value.length > 0 ? selectedChampionsSub.value : null,
+        })
+        .eq('id', currentUser.value?.id)
+        .select();
+
+      if (subError) {
+        console.error('부 포지션 저장 오류:', subError.message);
+        return;
+      }
+
+      if (subData && subData.length > 0) {
+        usersStore.updateGroupMember(subData[0]);
+      } else {
+        console.log('부 포지션 저장 후 데이터 없음.');
+      }
     }
 
-    console.log('데이터 업데이트 완료');
     router.push('/user-tier/all');
   } catch (error) {
-    console.error('데이터 업데이트 중 오류 발생:', error);
+    console.error('저장 중 오류 발생:', error);
   }
 };
 
@@ -182,11 +151,11 @@ const goBack = () => {
 
 onMounted(() => {
   championsStore.fetchChampionsData();
-  selectedPosition.value = currentUser.value?.mainPosition || '';
-  if (currentUser.value?.subPosition) {
-    positionTypes.value = ['main', 'sub'];
-  } else {
-    positionTypes.value = ['main'];
+
+  if (positionType === 'main') {
+    selectedChampionsMain.value = currentUser.value?.most_champions_main || [];
+  } else if (positionType === 'sub') {
+    selectedChampionsSub.value = currentUser.value?.most_champions_sub || [];
   }
 });
 </script>
@@ -199,11 +168,17 @@ onMounted(() => {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+
+  .champion__search {
+    width: 100%;
+  }
+
   .champion__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
     gap: 10px;
     width: 100%;
+
     .champion__name {
       width: 100%;
       overflow: hidden;
@@ -213,20 +188,24 @@ onMounted(() => {
       white-space: nowrap;
     }
   }
+
   .champion__item {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+
   .champion__img {
     width: 75px;
     height: 75px;
     margin-bottom: 10px;
     transition: all 0.2s ease-in-out;
+
     &:hover {
       transform: scale(1.1);
     }
   }
+
   .btns {
     display: flex;
     justify-content: space-between;
